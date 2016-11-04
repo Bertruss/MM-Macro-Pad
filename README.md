@@ -1,5 +1,5 @@
 # 3x3-key-matrix
-Code and various design artifacts for build of a 3x3 key matrix, for use as a macro-pad. Microcontroller used is the Teensy-LC. In many way this is a very simple project, but the goal is not to break new ground so much as it is to learn new skills. Code is currently in arduino's weird format due to issues with my work environment, eventual migration to a strictly c based implementation is the intention. 
+Code and various design artifacts for build of a 3x3 key matrix, for use as a macro-pad. Microcontroller used is the Teensy-LC. In many ways this is a very simple project, but the goal is not to break new ground so much as it is to learn new skills. Code is currently using the teensyduino libraries for ease of implementation, but I'm hopeful to eventually try the more "hands on" approach, with less reliance on the arduino ide and teensyduino libraries.
 
 ##design goals
 -multiple modes
