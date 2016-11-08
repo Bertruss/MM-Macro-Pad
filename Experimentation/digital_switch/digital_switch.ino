@@ -10,7 +10,7 @@ int led = 13;
 //runs upon intialization once pre-loop
 void setup() {                
   // initialize digital pins
-  pinMode(pushbutton, INPUT);
+  pinMode(pushbutton, INPUT_PULLUP); //apparently there is a built-in pullup resistor that can be used
   pinMode(led, OUTPUT);     
 }
 
