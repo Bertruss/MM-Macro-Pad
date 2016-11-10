@@ -109,14 +109,14 @@ void dispNumDur(int Num, int runtime){//reduces constant load on chip. runtime i
 
 
 //DEBUG
+
 void bufferRead(){ //only reads one key at a time, but this is just debug
     int cnt;
     for(cnt = 0; cnt < 8; cnt = cnt + 1){
         if(button_buff[cnt]){
-            Keyboard.print((cnt + 1));
+            dispNumDur((cnt + 1),3);
           }    
       }
-   Keyboard.println();
    }
 
 void setup() {
@@ -140,8 +140,8 @@ void loop() {
 buffReset();
 rowSet(0);
 colRead(0);
-bufferRead();  
-delay(5000);
+bufferRead();
+delay(20);
 }
 
 
