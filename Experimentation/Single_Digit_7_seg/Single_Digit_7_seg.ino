@@ -74,11 +74,9 @@ void dispNumDuration(int Num, int runtime){//reduces constant load on chip. runt
   
 void setup() {
     int cnt;
-    for (cnt = 0; cnt < 9; cnt = cnt + 1){ //instantiates every pin in pin[] to OUTPUT
-      pinMode(pin[cnt],OUTPUT);
-    } 
-    for (cnt = 0; cnt < 9; cnt = cnt + 1){ //instantiates every pin in pin[] to HIGH, pins are directly driving leds, which have a common source and are thus active low.  
-      digitalWrite(pin[cnt],HIGH);
+    for (cnt = 0; cnt < 9; cnt = cnt + 1){ 
+      pinMode(pin[cnt],OUTPUT);//instantiates every pin in pin[] to OUTPUT
+      digitalWrite(pin[cnt],HIGH);//instantiates every pin in pin[] to HIGH, pins are directly driving leds, which have a common source and are thus active low.
     } 
   }
 
