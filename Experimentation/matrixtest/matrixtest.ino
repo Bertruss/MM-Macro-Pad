@@ -25,6 +25,10 @@ void debounce(int rownum, int colnum){
   
   if(readPin != button_lastState[address]){
     debounce_timer[address] = millis();
+     //when going from high to low, reset cooldown marker;
+      if(readPin == LOW){ 
+        cooldown_timer[address] = millis();
+      }
     }
     
   if((millis() - debounce_timer[address]) > delayt && readPin != button_buff[address]){
@@ -32,11 +36,6 @@ void debounce(int rownum, int colnum){
       if(((millis() - cooldown_timer[address]) > cooldown && readPin == HIGH) || readPin == LOW){
         button_buff[address] = readPin;
       } 
-      
-      //when going from high to low, reset cooldown marker;
-      if(readPin == LOW){ 
-        cooldown_timer[address] = millis();
-      }
     }
   button_lastState[address] = readPin;
   }
