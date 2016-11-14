@@ -1,4 +1,3 @@
-//V1.0
 //9 button matrix with 7-seg output
 //prints which button has been pressed to 7-seg display
 
@@ -6,54 +5,59 @@
 const int col[3] PROGMEM = {1, 2, 3};
 const int row[3] PROGMEM = {9, 10, 11};
 
-//consider this a beta implementation. 
-//Working on just having a list of integer representations of the keys
-bool button_buff[9] = {false,false,false,false,false,false,false,false,false};
+int button_buff[9];
+int button_lastState[9];
+unsigned long debounce_timer[9];
 
 
+int buttonaddr(int rownum, int colnum){
+  return (3 * rownum) + (colnum + 1);
+  }
 
-void colRead(int row){ //handles column polling, rows numbered from 0 to 2
-  int cnt;
-  int rowNum = row*3;
-  for(cnt = rowNum; cnt < 3; cnt = cnt + 1){
-     if(digitalRead(col[cnt])== HIGH){ 
-      button_buff[cnt]= true;
-     }
+//debouncing pin reader
+void debounce(int rownum, int colnum){
+  int address = buttonaddr(rownum, colnum);
+  int pin = col[colnum];
+  unsigned long delayt = 1000;//how long a button needs to be depressed in order to be read
+  int readPin = digitalRead(pin);
+  
+  if(readPin != button_lastState[address]){
+    debounce_timer[address] = millis();
+    }
+    
+  if((millis() - debounce_timer[address]) > delayt && readPin != button_buff[address]){
+    button_buff[address] = readPin;
     }
   }
 
-void rowSet(int rowIn) { //sets chosen row high and all others low
+  
+//sets chosen row high and all others low
+void rowSet(int rowIn) { 
    int cnt;
-   for(cnt = 0; cnt < 3; cnt = cnt + 1);
-   if(cnt == rowIn){
-    digitalWrite(row[cnt], HIGH);
-    }
-   else{
-    digitalWrite(row[cnt], LOW);
-    }
+   for(cnt = 0; cnt < 3; cnt = cnt + 1){
+     if(cnt == rowIn){
+      digitalWrite(row[cnt], HIGH);
+      }
+     else{
+      digitalWrite(row[cnt], LOW);
+      }
+     }
    }
 
 
-//checks every button in the matrix, stores state in buffer 
+//checks every button in the matrix, runs debounce on it 
 void scan(){
-    int cnt;
+    //numbered by array index 0 to two. 
+    int rownum;
+    int colnum;
     //reads every key, stores in the button buffer array.
-    for(cnt = 0; cnt < 3; cnt = cnt + 1){//checks each row
-      rowSet(cnt);
-      colRead(cnt);
+    for(rownum = 0; rownum < 3; rownum = rownum + 1){//checks each row
+      rowSet(rownum);
+      for(colnum = 0; colnum < 3; colnum = colnum + 1){
+        debounce(rownum, colnum);
+      }
     }
   }
-
-//resets button matrix buffer
-void buffReset(){
-  int cnt;
-  for(cnt = 0; cnt < 9; cnt = cnt + 1){
-    button_buff[cnt] = false;
-    }   
-  }
-
-
-//DEBUG
 
 void bufferRead(){ //only reads one key at a time, but this is just debug
     int cnt;
@@ -75,11 +79,7 @@ void setup() {
 }
 
 void loop() {
-//uses explicit classes, for testing purposes
-buffReset();
-rowSet(0);
-colRead(0);
-bufferRead();
+
 }
 
 
