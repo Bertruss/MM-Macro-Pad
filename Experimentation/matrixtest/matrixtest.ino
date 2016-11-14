@@ -1,14 +1,18 @@
-//9 button matrix with 7-seg output
-//prints which button has been pressed to 7-seg display
+//9 button matrix with cooldown and debounce
 
 // pin assignment
 const int col[3] PROGMEM = {1, 2, 3};
 const int row[3] PROGMEM = {9, 10, 11};
 
+//arrays for button debouncing and cooldown
 int button_buff[9];
-int button_lastState[9];
+int button_lastState[9] = {0,0,0,0,0,0,0,0,0};
 unsigned long debounce_timer[9];
+unsigned long cooldown_timer[9];
 
+//how long a button needs to be depressed in order to be read
+const unsigned long delayt = 50;
+const unsigned cooldown = 300;
 
 int buttonaddr(int rownum, int colnum){
   return (3 * rownum) + (colnum + 1);
@@ -17,17 +21,24 @@ int buttonaddr(int rownum, int colnum){
 //debouncing pin reader
 void debounce(int rownum, int colnum){
   int address = buttonaddr(rownum, colnum);
-  int pin = col[colnum];
-  unsigned long delayt = 1000;//how long a button needs to be depressed in order to be read
-  int readPin = digitalRead(pin);
+  int readPin = digitalRead(col[colnum]);
   
   if(readPin != button_lastState[address]){
     debounce_timer[address] = millis();
     }
     
   if((millis() - debounce_timer[address]) > delayt && readPin != button_buff[address]){
-    button_buff[address] = readPin;
+      //if its been more than the cooldown timer since last transitioned from high to low, allow button to be set to high 
+      if(((millis() - cooldown_timer[address]) > cooldown && readPin == HIGH) || readPin == LOW){
+        button_buff[address] = readPin;
+      } 
+      
+      //when going from high to low, reset cooldown marker;
+      if(readPin == LOW){ 
+        cooldown_timer[address] = millis();
+      }
     }
+  button_lastState[address] = readPin;
   }
 
   
@@ -62,7 +73,7 @@ void scan(){
 void bufferRead(){ //only reads one key at a time, but this is just debug
     int cnt;
     for(cnt = 0; cnt < 8; cnt = cnt + 1){
-        if(button_buff[cnt]){
+        if(button_buff[cnt] == HIGH){
             int out = cnt + 1;
             Keyboard.print(out);
           }    
@@ -79,7 +90,8 @@ void setup() {
 }
 
 void loop() {
-
+  scan();
+  bufferRead();
 }
 
 
