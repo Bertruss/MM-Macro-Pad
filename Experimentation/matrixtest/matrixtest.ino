@@ -1,4 +1,4 @@
-//9 button matrix with cooldown and debounce
+//9 button matrix with debounce
 
 // pin assignment
 //columns and rows numbered 0, 1, 2
