@@ -45,12 +45,12 @@ static const char numCodes[][10] = {
 
 void dispNum(int Num){//uses data from numCodes to cycle through all segs in display
     int cnt;
-    for (cnt = 0; cnt < 9; cnt = cnt + 1){ //scans through numcode, sets appropriate pins high
+    for (cnt = 0; cnt < 9; cnt = cnt + 1){ //scans through numcode, sets appropriate pins high/low
       if(numCodes[Num][cnt] == '1'){
-      digitalWrite(pin[cnt],LOW);
+        digitalWrite(pin[cnt],LOW);
       }
       else{
-      digitalWrite(pin[cnt],HIGH);    
+        digitalWrite(pin[cnt],HIGH);    
       }
     } 
   }
@@ -61,34 +61,30 @@ void dispReset(){
        digitalWrite(pin[cnt],HIGH);
     } 
   }
+
+void dispNumDuration(int Num, int runtime){//reduces constant load on chip. runtime is in 20's of ms. runtime 50 = 1s;
+    int cnt;
+    for(cnt = 0; cnt < runtime; cnt = cnt + 1){
+      dispNum(Num);
+      delay(10);
+      dispReset();
+      delay(10);
+      }
+  }
   
 void setup() {
-  int cnt;
-  for (cnt = 0; cnt < 9; cnt = cnt + 1){ //instantiates every pin in pin[] to OUTPUT
-    pinMode(pin[cnt],OUTPUT);
-  } 
-  for (cnt = 0; cnt < 9; cnt = cnt + 1){ //instantiates every pin in pin[] to HIGH, pins are directly driving leds, which have a common source and are thus active low.  
-    digitalWrite(pin[cnt],HIGH);
-  } 
-}
+    int cnt;
+    for (cnt = 0; cnt < 9; cnt = cnt + 1){ 
+      pinMode(pin[cnt],OUTPUT);//instantiates every pin in pin[] to OUTPUT
+      digitalWrite(pin[cnt],HIGH);//instantiates every pin in pin[] to HIGH, pins are directly driving leds, which have a common source and are thus active low.
+    } 
+  }
 
 void loop() {
- dispNum(5);
- delay(1000);
- dispReset();
- dispNum(4);
- delay(1000);
- dispReset();
-  dispNum(3);
- delay(1000);
- dispReset();
-  dispNum(2);
- delay(1000);
- dispReset();
-  dispNum(1);
- delay(1000);
- dispReset();
-  dispNum(0);
- delay(1000);
- dispReset();
+  dispNumDuration(5,50);
+  dispNumDuration(4,50);
+  dispNumDuration(3,50);
+  dispNumDuration(2,50);
+  dispNumDuration(1,50);
+  dispNumDuration(0,50);
 }

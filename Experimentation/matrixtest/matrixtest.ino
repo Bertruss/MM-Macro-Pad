@@ -1,90 +1,94 @@
-//9 button matrix
+//9 button matrix with debounce
 
 // pin assignment
-const int col[3] = {1, 2, 3};
-const int row[3] = {9, 10, 11};
+//columns and rows numbered 0, 1, 2
+const int col[3] PROGMEM = {1, 2, 3};
+const int row[3] PROGMEM = {9, 10, 11};
 
-bool button_buff[3][3] = {
-  {false,false,false},
-  {false,false,false},
-  {false,false,false}
-  };
+// You can map the keys however you wish, 
+// but this is how it is  configured by default
+//
+//       the number on each key in the map
+//       below marks its index in the buffer
+//       as well as it's signifier in the
+//       operation queue
+//
+//               0    1    2      
+//            |----|----|----|
+//          0 | 0  | 1  | 2  |
+//            |----|----|----|
+//          1 | 3  | 4  | 5  |
+//            |----|----|----|
+//          2 | 6  | 7  | 8  |
+//            |----|----|----|
 
-void colRead(int row){ //handles column polling
-  int cnt;
-  for(cnt = 0; cnt < 3; cnt = cnt + 1){
-     button_buff[row][cnt] = digitalRead(cnt) == HIGH;
-    }
+
+//arrays for button debouncing and cooldown
+int button_buff[9];
+int button_lastState[9] = {0,0,0,0,0,0,0,0,0};
+unsigned long debounce_timer[9];
+
+//how long a button needs to be depressed in order to be read, in ms
+const unsigned long delayt = 20;
+
+//given col and row, returns button address
+int buttonaddr(int rownum, int colnum){
+  return (3 * rownum) + (colnum);
   }
 
-void rowSet(int rowC) { //sets chosen row high and all others low
-/*
-  //method 1, harder to read, very short, computational overhead
-   
-   if (row <= 3 && row >= row1){
-    int rowS = row[rowC];
-    int cnt;
-    digitalWrite(row, HIGH);
-    for(cnt = 1; cnt < 3; cnt = cnt + 1)
-    { 
-      row++;
-      if(rowSelect > row[2]){rowSelect = row[0];}
-      digitalWrite(rowSelect, LOW);
-    }
-   }
- */
- 
-  //method 2, simpler to read, very long, memory overhead
-  switch(rowC){
-    case 0 : 
-      digitalWrite(row[0], HIGH);
-      digitalWrite(row[1], LOW);
-      digitalWrite(row[2], LOW);
-    break;
-    
-    case 1 : 
-      digitalWrite(row[0], LOW);
-      digitalWrite(row[1], HIGH);
-      digitalWrite(row[2], LOW);
-    break;
-
-    case 2 :
-      digitalWrite(row[0], LOW);
-      digitalWrite(row[1], LOW);
-      digitalWrite(row[2], HIGH);
-    break;
-    
-    default :
-      digitalWrite(row[0], LOW);
-      digitalWrite(row[1], LOW);
-      digitalWrite(row[2], LOW);
-    }
-  }
-
-void printPresses(){
+//debouncing pin reader
+void debounce(int rownum, int colnum){
+  int address = buttonaddr(rownum, colnum);
+  int readPin = digitalRead(col[colnum]);
   
+  if(readPin != button_lastState[address]){
+    debounce_timer[address] = millis();
+    }
+    
+  if((millis() - debounce_timer[address]) > delayt && readPin != button_buff[address]){
+      button_buff[address] = readPin;
+    }
+  button_lastState[address] = readPin;
+  }
+
+  
+//sets chosen row high and all others low
+void rowSet(int rowIn) { 
+   int cnt;
+   for(cnt = 0; cnt < 3; cnt = cnt + 1){
+     if(cnt == rowIn){
+      digitalWrite(row[cnt], HIGH);
+      }
+     else{
+      digitalWrite(row[cnt], LOW);
+      }
+     }
+   }
+
+
+//checks every button in the matrix, runs "debounce" on it 
+void scan(){
+    //numbered by array index 0 to two. 
+    int rownum, colnum;
+    for(rownum = 0; rownum < 3; rownum = rownum + 1){//increments rownum and sets the row with that number to HIGH
+      rowSet(rownum);
+      for(colnum = 0; colnum < 3; colnum = colnum + 1){//increments colnum and runs "debounce" on that column
+        debounce(rownum, colnum);
+      }
+    }
   }
 
 void setup() {
-  pinMode(row[0], OUTPUT);
-  pinMode(row[1], OUTPUT);
-  pinMode(row[2], OUTPUT);
-  pinMode(col[0], INPUT);
-  pinMode(col[1], INPUT);
-  pinMode(col[2], INPUT);
+  int cnt;
+  //button matrix instantiation
+  for (cnt = 0; cnt < 3; cnt = cnt + 1){ //instantiates every pin in row[] to OUTPUT and in col[] to INPUT_PULLUP
+      pinMode(row[cnt],OUTPUT);
+      pinMode(col[cnt],INPUT_PULLUP);
+    }
 }
 
-
-
-
 void loop() {
-  int cnt;
-  for(cnt = 0; cnt < 3; cnt = cnt + 1){
-    rowSet(cnt);
-    colRead(cnt);
-  }
-  //reads every key, stored in the button buffer array.
-  //does nothing with this information, atm. 
+  scan();
 }
 
 
