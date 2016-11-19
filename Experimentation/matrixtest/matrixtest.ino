@@ -1,5 +1,4 @@
-//QueueArray library is required for this implementation. The QueueList library...just made the LED blink furiously. This can be found here: http://playground.arduino.cc/Code/QueueArray
-#include <QueueArray.h> //NOT WORKING
+#include <LCqueue.h>
 
 //9 button matrix with 
 //         *debounce
@@ -8,17 +7,20 @@
 //         *button cooldown 
 //               - prevents a button press from being registered multiple times
 //               - disabled by setting "cooldownt" to 0
+//               - when you disable the cooldown timer, button presses are still only registered once assuming it passes debounce
 //         *longhold 
 //               - you know when you hold a button for more than a second it just acts like continuous presses. that thing.
 //               - adjusted via "longholdt" 
 //               - Can't really be disabled, but you can set the number really high and that would effectively do the trick.  
-
+//
+//          note: all time is counted in ms, or 1/1000 of a second
  
 
 // pin assignment
 //columns and rows numbered 0, 1, 2
 const int col[3] PROGMEM = {1, 2, 3};
 const int row[3] PROGMEM = {9, 10, 11};
+
 
 // You can map the keys however you wish, 
 // but this is how it is configured by default
@@ -45,11 +47,11 @@ unsigned long debounce_timer[9];
 const unsigned long delayt = 20;//how long a button needs to be depressed in order to be read, in ms
 
 //output/operation queue
-QueueArray<int> outputBuffer; //NOT WORKING
+LCqueue *outputBuffer; 
 
 //longhold timer, to prevent unnecessary numbers of consecutive registered button operations.  
 unsigned long cooldown_timer[9];
-const unsigned long cooldownt PROGMEM = 200;
+const unsigned long cooldownt PROGMEM = 100;
 const unsigned long longholdt PROGMEM = 1000;
 
 //given col and row, returns button address and "number"
@@ -72,20 +74,28 @@ void debounce(int rownum, int colnum){
     button_lastState[address] = readPin;
   }
 
+//multistage checker that handles cooldown and longhold functionality logic
 bool checkCoolDown(int address){//returns true if cooldown timer is exceeded, or if longhold state is reached
     if(cooldown_timer[address] > debounce_timer[address])//if the last time buttonstate changed was before the last time the cooldown timer was reset  
     {
       if((millis() - cooldown_timer[address]) > longholdt){ //and since last cooldown timer update,  "longhold" time has been exceeded, return true
+        Keyboard.println("longhold state \n");//debug
         return true;
       }
       else{
+        Keyboard.println("pre-longhold state  \n");//debug
         return false;
       }  
     }
-    else if((millis() - cooldown_timer[address]) > cooldownt){//if cooldown timer is exceeded, resets timer, returns true 
+    else if((millis() - cooldown_timer[address]) > cooldownt && cooldownt != 0){//if cooldown timer is exceeded, resets timer, returns true 
+      Keyboard.println("reached cooldown reset state \n");//debug
       cooldown_timer[address] = millis();
       return true;
     }                             
+    else if (debounce_timer[address] > cooldown_timer[address]){//makes sure that if the cooldown is disabled, one button press still only registers once unless longhold is exceeded
+      cooldown_timer[address] = millis();
+      return true;	
+    }
     else{
       return false; //all else return false.
     }                                                          
@@ -118,12 +128,14 @@ void scan(){
   }
 
 
+//reads the current button state as determined via debounced matrix scan, 
+//and then makes sure the press is registerable (has no withstanding cooldown, if it's exceeded longhold time, or if the ouput buffer is full) 
 void genOutputBuffer(){
   int cnt;
   for(cnt = 0; cnt < 9; cnt = cnt + 1){
     int state =  button_buff[cnt];  
-    if(state == HIGH && checkCoolDown(cnt) && (outputBuffer.count() < 10)){
-      outputBuffer.enqueue(cnt);
+    if(state == HIGH && checkCoolDown(cnt) && (count(outputBuffer) < 100)){
+      push(outputBuffer, cnt);
       } 
     }
   }
@@ -136,8 +148,12 @@ void genOutputBuffer(){
 //perhaps it should run 5 ouputs every loop. this would be over half of the potential inputs registered in any given loop, 
 //and add a delay of one ms to every execution to /marginally/ slow down the output   
 void executeBuffer(){
-  int action = outputBuffer.dequeue();//NOT WORKING
-  Keyboard.print(action);
+    Keyboard.println("Reached queue pop");//debug
+    int action = pop(outputBuffer);
+    Keyboard.println(action);//debug
+    if(action != -1){
+    Keyboard.print(action);
+    }
   }
   
 void setup() {
@@ -147,6 +163,7 @@ void setup() {
       pinMode(row[cnt],OUTPUT);
       pinMode(col[cnt],INPUT_PULLUP);
     }
+  outputBuffer = new_queue(); //allocating memory for queue
 }
 
 void loop() {
