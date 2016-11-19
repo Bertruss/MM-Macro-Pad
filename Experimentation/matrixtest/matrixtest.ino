@@ -1,3 +1,4 @@
+//LCqueue available in seperate repo. 
 #include <LCqueue.h>
 
 //9 button matrix with 
@@ -14,7 +15,6 @@
 //               - Can't really be disabled, but you can set the number really high and that would effectively do the trick.  
 //
 //          note: all time is counted in ms, or 1/1000 of a second
- 
 
 // pin assignment
 //columns and rows numbered 0, 1, 2
@@ -39,20 +39,24 @@ const int row[3] PROGMEM = {9, 10, 11};
 //          2 | 6  | 7  | 8  |
 //            |----|----|----|
 
-
 //arrays for button debouncing
 int button_buff[9];
 int button_lastState[9] = {0,0,0,0,0,0,0,0,0};
-unsigned long debounce_timer[9];
+unsigned long confirm_timer[9]; //how long since the button reached confirmed on or off state
+unsigned long debounce_timer[9]; //how long since the buttons state last changed
 const unsigned long delayt = 20;//how long a button needs to be depressed in order to be read, in ms
 
 //output/operation queue
 LCqueue *outputBuffer; 
 
-//longhold timer, to prevent unnecessary numbers of consecutive registered button operations.  
+//cooldown timer, in case you want to prevent a button from being able to be pressed consecutively too quickly.
 unsigned long cooldown_timer[9];
 const unsigned long cooldownt PROGMEM = 100;
-const unsigned long longholdt PROGMEM = 1000;
+
+//longhold timer, to prevent unnecessary numbers of consecutive registered button operations.  
+unsigned long longhold_timer[9]; //timer for longhold state limits how quickly longhold triggers a registered activation 
+const unsigned long longholdt PROGMEM = 1000;//time to longhold state
+const unsigned long longhold_active_t PROGMEM = 200;//limits how quickly longhold signals an output
 
 //given col and row, returns button address and "number"
 int buttonaddr(int rownum, int colnum){
@@ -62,39 +66,59 @@ int buttonaddr(int rownum, int colnum){
 //debouncing pin reader, prevents rapid on/off switching or registering multiple button presses due to switch noise. 
 void debounce(int rownum, int colnum){
     int address = buttonaddr(rownum, colnum);
-    int readPin = digitalRead(col[colnum]); //current state of pin assigned to pinRead
     
-    if(readPin != button_lastState[address]){//if pin state changes, reset debounce time marker to current time
+    //current state of pin assigned to pinRead
+    int readPin = digitalRead(col[colnum]); 
+    
+    //if pin state changes, reset debounce time marker to current time
+    if(readPin != button_lastState[address]){
       debounce_timer[address] = millis();
       }
-      
-    if((millis() - debounce_timer[address]) > delayt && readPin != button_buff[address]){ //if pin has not changed state for longer than the debounce delay (delayt), then commit current state to button_buff
+
+    //if pin has not changed state for longer than the debounce delay (delayt), then commit current state to button_buff  
+    if((millis() - debounce_timer[address]) > delayt && readPin != button_buff[address]){ 
+        confirm_timer[address] = millis();
         button_buff[address] = readPin;
       }
     button_lastState[address] = readPin;
   }
 
+bool checkLongHold(unsigned long button_cooldown_time,  unsigned long button_confirmed_state_change_time, int address){
+     /* if the last time buttonstate changed was before the last time the cooldown timer was reset, continues. 
+      * ">=" because it happens on a shorten than ms scale, but if they're equal, cooldown reset had to happen 
+      *  after the state change reset because of the order of the flow. this next part is bronken up to be 
+      *  easier to explain and read.   
+      */
+     if(button_cooldown_time >= button_confirmed_state_change_time){
+
+      //if the button has been held down long enough for a long hold mode activation
+      if((millis() - button_cooldown_time) > longholdt){
+
+          //this is another timer checker used to limit how fast the longhold state registers activations
+          if((millis() - longhold_timer[address]) > longhold_active_t){
+          longhold_timer[address] = millis();
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
 //multistage checker that handles cooldown and longhold functionality logic
 bool checkCoolDown(int address){//returns true if cooldown timer is exceeded, or if longhold state is reached
-    if(cooldown_timer[address] > debounce_timer[address])//if the last time buttonstate changed was before the last time the cooldown timer was reset  
-    {
-      if((millis() - cooldown_timer[address]) > longholdt){ //and since last cooldown timer update,  "longhold" time has been exceeded, return true
-        Keyboard.println("longhold state \n");//debug
-        return true;
+    unsigned long button_cooldown_time = cooldown_timer[address];
+    unsigned long button_confirmed_state_change_time = confirm_timer[address];
+    if(checkLongHold(button_cooldown_time, button_confirmed_state_change_time, address)){
+      return true;
       }
-      else{
-        Keyboard.println("pre-longhold state  \n");//debug
-        return false;
-      }  
-    }
-    else if((millis() - cooldown_timer[address]) > cooldownt && cooldownt != 0){//if cooldown timer is exceeded, resets timer, returns true 
-      Keyboard.println("reached cooldown reset state \n");//debug
+    else if((millis() - button_cooldown_time) > cooldownt && button_confirmed_state_change_time > button_cooldown_time && cooldownt != 0){//if cooldown timer is exceeded, resets timer, returns true //&& button_confirmed_state_change_time > button_cooldown_time 
       cooldown_timer[address] = millis();
       return true;
     }                             
-    else if (debounce_timer[address] > cooldown_timer[address]){//makes sure that if the cooldown is disabled, one button press still only registers once unless longhold is exceeded
+    else if (button_confirmed_state_change_time > button_cooldown_time){//makes sure that if the cooldown is disabled, one button press still only registers once unless longhold is exceeded
       cooldown_timer[address] = millis();
-      return true;	
+      return true;  
     }
     else{
       return false; //all else return false.
@@ -133,7 +157,7 @@ void scan(){
 void genOutputBuffer(){
   int cnt;
   for(cnt = 0; cnt < 9; cnt = cnt + 1){
-    int state =  button_buff[cnt];  
+    int state = button_buff[cnt];
     if(state == HIGH && checkCoolDown(cnt) && (count(outputBuffer) < 100)){
       push(outputBuffer, cnt);
       } 
@@ -142,15 +166,9 @@ void genOutputBuffer(){
 
 //executes operations described by the output.
 //NOTE:
-//This part will be expanded to execute macro's, perhaps described in an imported c file. 
-//Only executes one at a time to make sure data throughput isn't overwhelmed.
-//This will obviously lead to some issues (output buffer overflow, potential input/output lag(?), but I don't know solutions to these yet.
-//perhaps it should run 5 ouputs every loop. this would be over half of the potential inputs registered in any given loop, 
-//and add a delay of one ms to every execution to /marginally/ slow down the output   
+//This part will be expanded to execute macro's, perhaps described in an imported c file.  
 void executeBuffer(){
-    Keyboard.println("Reached queue pop");//debug
     int action = pop(outputBuffer);
-    Keyboard.println(action);//debug
     if(action != -1){
     Keyboard.print(action);
     }
@@ -169,8 +187,5 @@ void setup() {
 void loop() {
   scan();
   genOutputBuffer();
-  delay(10);
   executeBuffer();
 }
-
-
