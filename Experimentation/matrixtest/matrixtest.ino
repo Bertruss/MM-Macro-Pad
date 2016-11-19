@@ -1,4 +1,3 @@
-//LCqueue available in seperate repo. 
 #include <LCqueue.h>
 
 //9 button matrix with 

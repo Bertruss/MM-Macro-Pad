@@ -4,7 +4,6 @@
  * teensy via make.
  */
 
-//LCqueue available in seperate repo. 
 #include <LCqueue.h>
 
 //         *debounce
