@@ -14,52 +14,62 @@
 //               - Can't really be disabled, but you can set the number really high and that would effectively do the trick.  
 //
 //          note: all time is counted in ms, or 1/1000 of a second
+//
+//    You can map the keys however you wish, 
+//    but this is how it is configured by default
+//
+//          the number on each key in the map
+//          below marks its index in the buffer
+//          as well as it's signifier in the
+//           operation queue 
+//
+//                  0    1    2      
+//               |----|----|----|
+//             0 | 0  | 1  | 2  |
+//               |----|----|----|
+//             1 | 3  | 4  | 5  |
+//               |----|----|----|
+//             2 | 6  | 7  | 8  |
+//                |----|----|----|
+    
 
-// pin assignment
+// PIN ASSIGNMENT 
+//number of rows
+const int rows PROGMEM = 3;
+
+//number of columns
+const int columns PROGMEM = 3;
+
+//number of buttons
+const int buttons PROGMEM = rows * columns;
+
 //columns and rows numbered 0, 1, 2
-const int col[3] PROGMEM = {1, 2, 3};
-const int row[3] PROGMEM = {9, 10, 11};
+const int col[columns] PROGMEM = {1, 2, 3};
+const int row[rows] PROGMEM = {9, 10, 11};
 
-
-// You can map the keys however you wish, 
-// but this is how it is configured by default
-//
-//       the number on each key in the map
-//       below marks its index in the buffer
-//       as well as it's signifier in the
-//       operation queue 
-//
-//               0    1    2      
-//            |----|----|----|
-//          0 | 0  | 1  | 2  |
-//            |----|----|----|
-//          1 | 3  | 4  | 5  |
-//            |----|----|----|
-//          2 | 6  | 7  | 8  |
-//            |----|----|----|
 
 //arrays for button debouncing
-int button_buff[9];
-int button_lastState[9] = {0,0,0,0,0,0,0,0,0};
-unsigned long confirm_timer[9]; //how long since the button reached confirmed on or off state
-unsigned long debounce_timer[9]; //how long since the buttons state last changed
+int button_buff[buttons];
+int button_lastState[buttons];
+unsigned long confirm_timer[buttons]; //how long since the button reached confirmed on or off state
+unsigned long debounce_timer[buttons]; //how long since the buttons state last changed
 const unsigned long delayt = 20;//how long a button needs to be depressed in order to be read, in ms
 
 //output/operation queue
 LCqueue *outputBuffer; 
 
 //cooldown timer, in case you want to prevent a button from being able to be pressed consecutively too quickly.
-unsigned long cooldown_timer[9];
+unsigned long cooldown_timer[buttons];
 const unsigned long cooldownt PROGMEM = 100;
 
 //longhold timer, to prevent unnecessary numbers of consecutive registered button operations.  
-unsigned long longhold_timer[9]; //timer for longhold state limits how quickly longhold triggers a registered activation 
+unsigned long longhold_timer[buttons]; //timer for longhold state limits how quickly longhold triggers a registered activation 
 const unsigned long longholdt PROGMEM = 1000;//time to longhold state
 const unsigned long longhold_active_t PROGMEM = 200;//limits how quickly longhold signals an output
 
 //given col and row, returns button address and "number"
 int buttonaddr(int rownum, int colnum){
-  return (3 * rownum) + (colnum);
+  return (rows * rownum) + (colnum);
   }
 
 //debouncing pin reader, prevents rapid on/off switching or registering multiple button presses due to switch noise. 
@@ -89,10 +99,8 @@ bool checkLongHold(unsigned long button_cooldown_time,  unsigned long button_con
       *  easier to explain and read.   
       */
      if(button_cooldown_time >= button_confirmed_state_change_time){
-
       //if the button has been held down long enough for a long hold mode activation
       if((millis() - button_cooldown_time) > longholdt){
-
           //this is another timer checker used to limit how fast the longhold state registers activations
           if((millis() - longhold_timer[address]) > longhold_active_t){
           longhold_timer[address] = millis();
@@ -111,7 +119,7 @@ bool checkCoolDown(int address){//returns true if cooldown timer is exceeded, or
     if(checkLongHold(button_cooldown_time, button_confirmed_state_change_time, address)){
       return true;
       }
-    else if((millis() - button_cooldown_time) > cooldownt && button_confirmed_state_change_time > button_cooldown_time && cooldownt != 0){//if cooldown timer is exceeded, resets timer, returns true //&& button_confirmed_state_change_time > button_cooldown_time 
+    else if((millis() - button_cooldown_time) > cooldownt && button_confirmed_state_change_time > button_cooldown_time && cooldownt != 0){    //if cooldown timer is exceeded, resets timer, returns true //&& button_confirmed_state_change_time > button_cooldown_time 
       cooldown_timer[address] = millis();
       return true;
     }                             
@@ -127,7 +135,7 @@ bool checkCoolDown(int address){//returns true if cooldown timer is exceeded, or
 //sets chosen row high and all others low
 void rowSet(int rowIn) { 
    int cnt;
-   for(cnt = 0; cnt < 3; cnt = cnt + 1){
+   for(cnt = 0; cnt < rows; cnt = cnt + 1){
      if(cnt == rowIn){
       digitalWrite(row[cnt], HIGH);
       }
@@ -142,9 +150,9 @@ void rowSet(int rowIn) {
 void scan(){
     //numbered by array index 0 to two. 
     int rownum, colnum;
-    for(rownum = 0; rownum < 3; rownum = rownum + 1){   //increments rownum 
+    for(rownum = 0; rownum < rows; rownum = rownum + 1){   //increments rownum 
       rowSet(rownum);                                   //and sets the row with that number to HIGH.
-      for(colnum = 0; colnum < 3; colnum = colnum + 1){ //increments colnum 
+      for(colnum = 0; colnum < columns; colnum = colnum + 1){ //increments colnum 
         debounce(rownum, colnum);                       //and runs "debounce" on that column
       }
     }
@@ -155,7 +163,7 @@ void scan(){
 //and then makes sure the press is registerable (has no withstanding cooldown, if it's exceeded longhold time, or if the ouput buffer is full) 
 void genOutputBuffer(){
   int cnt;
-  for(cnt = 0; cnt < 9; cnt = cnt + 1){
+  for(cnt = 0; cnt < buttons; cnt = cnt + 1){
     int state = button_buff[cnt];
     if(state == HIGH && checkCoolDown(cnt) && (count(outputBuffer) < 100)){
       push(outputBuffer, cnt);
@@ -176,10 +184,13 @@ void executeBuffer(){
 void setup() {
   int cnt;
   //button matrix instantiation
-  for (cnt = 0; cnt < 3; cnt = cnt + 1){ //instantiates every pin in row[] to OUTPUT and in col[] to INPUT_PULLUP
+  for (cnt = 0; cnt < rows; cnt = cnt + 1){ //instantiates every pin in row[] to OUTPUT and in col[] to INPUT_PULLUP
       pinMode(row[cnt],OUTPUT);
+    }
+ for (cnt = 0; cnt < columns; cnt = cnt + 1){ //instantiates every pin in row[] to OUTPUT and in col[] to INPUT_PULLUP
       pinMode(col[cnt],INPUT_PULLUP);
     }
+   
   outputBuffer = new_queue(); //allocating memory for queue
 }
 
