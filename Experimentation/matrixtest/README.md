@@ -26,15 +26,11 @@
 ###Extensible
   - Many parts will have to be manually adjusted to account, but I have tried to make it as painless as possible to make your own matrix with however many rows and columns as you might want. Admittedly, it's still a huge hassle, but this is being worked on.
 
-          note: all time is counted in ms, or 1/1000 of a second
+note: all time is counted in ms, or 1/1000 of a second
 
-    You can create as many rows and columns as you'd like, 
-    but this is how it is configured by default
+You can create as many rows and columns as you'd like, but this is how it is configured by default
 
-          The number on each key in the map
-          below marks its indentifier in the buffer
-          as well as it's signifier in the
-          operation queue 
+The number on each key in the map below marks its indentifier in the buffer as well as it's signifier in the operation queue 
 
                   0    1    2      
                |----|----|----|
@@ -47,6 +43,7 @@
 
 ##Instructions For Use
 In order to use this code with your teensy, you must:
+
 1.  Have the arduino IDE installed
 2.  Have the Teensyduino libraries installed 
 3.  Place the LCqueue folder from "libraries" in your Arduino install's "libraries" folder 
