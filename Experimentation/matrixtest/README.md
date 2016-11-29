@@ -1,30 +1,29 @@
 #BETA README
-###Verbose code Readme with instructions for use
 #Extensible Button Matrix using a Teensy microcontroller
 
-##debounce
+###debounce
  - cleans input of noise that occurs from switch depressing.
    - there are pre-made libs for this in teensyduino, but I wrote my own code to implement this
 
-##Button cooldown 
+###Button cooldown 
   - can help prevent accidental double activation of a key function by way of rapid double tap.
   - Independent values for each button, adjusted via the associated value in the "cooldownt" array
  
   - when you disable the cooldown timer, button presses are still only registered once assuming it passes debounce
 
-##Longhold 
+###Longhold 
   - you know when you hold a button for more than a second it just acts like continuous presses. that thing.
   - Independent values for each button, adjusted via the associated value in the "longholdt" array 
   - disabled by being set to 0
   - is not blocked by cooldown
   
-##Media Keys
+###Media Keys
   - added functions for easy mapping of media keys
          
-##Fully rebindable
+###Fully rebindable
   - Each key is read as their address, that address is then mapped to a case in the keymap function, which essentially executes as a script. For a full range of what can be put in these scripts, links to the documentation from PJRC (the teensyduino libs) and Arduino regarding keyboard communications and the signals that can be sent from the teensy can be found at the bottom of this document.
               
-##extensible
+###Extensible
   - Many parts will have to be manually adjusted to account, but I have tried to make it as painless as possible to make your own matrix with however many rows and columns as you might want. Admittedly, it's still a huge hassle, but this is being worked on.
 
           note: all time is counted in ms, or 1/1000 of a second
@@ -48,15 +47,15 @@
 
 ##Instructions For Use
 In order to use this code with your teensy, you must:
-1. Have the arduino IDE installed
-2. Have the Teensyduino libraries installed 
-3. Place the LCqueue folder from "libraries" in your Arduino install's "libraries" folder 
-4. Open the src file in the Arduino IDE and mouse over the Tools table
-	- make sure "Board" says whichever teensy you are using.
-	- "USB Type" needs to be "KeyBoard + Mouse + Joystick"
-5. go to Sketch > Include Library > LCqueue	(this will be under "contributed libraries")
-6. There are currently instructions in file for how to customize the software, which you can go through. I plan on including a more comprehensive guide soon.
-7. Assuming you have the code configured how you like, you're done! You just need to press the upload button to try out your scripts. 
+1.  Have the arduino IDE installed
+2.  Have the Teensyduino libraries installed 
+3.  Place the LCqueue folder from "libraries" in your Arduino install's "libraries" folder 
+4.  Open the src file in the Arduino IDE and mouse over the Tools table
+  - make sure "Board" says whichever teensy you are using.
+  - "USB Type" needs to be "KeyBoard + Mouse + Joystick"
+5.  go to Sketch > Include Library > LCqueue	(this will be under "contributed libraries")
+6.  There are currently instructions in file for how to customize the software, which you can go through. I plan on including a more comprehensive guide soon.
+7.  Assuming you have the code configured how you like, you're done! You just need to press the upload button to try out your scripts. 
 		   
 ##Important Links and resources			   
 Teensyduino & Arduino IDE (May need to be a legacy release for teensyduino compatibility, check the download and install instructions on PJRC for details)
