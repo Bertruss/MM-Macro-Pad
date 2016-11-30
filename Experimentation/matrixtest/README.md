@@ -1,9 +1,9 @@
 #BETA README
 #Extensible Button Matrix using a Teensy microcontroller
-
+##Features
 ###debounce
  - cleans input of noise that occurs from switch depressing.
-   - there are pre-made libs for this in teensyduino, but I wrote my own code to implement this
+   - there are pre-made libs for this in teensyduino, but I wrote my own. 
 
 ###Button cooldown 
   - can help prevent accidental double activation of a key function by way of rapid double tap.
@@ -46,22 +46,26 @@ In order to use this code with your teensy, you must:
 
 1.  Have the arduino IDE installed
 2.  Have the Teensyduino libraries installed 
-3.  Place the LCqueue folder from "libraries" in your Arduino install's "libraries" folder 
-4.  Open the src file in the Arduino IDE and mouse over the Tools table
+3.  Place the LCqueue folder from "libraries" to your Arduino install's "libraries" folder 
+4.  Open the src file in the Arduino IDE and mouse over the Tools tab
   - make sure "Board" says whichever teensy you are using.
   - "USB Type" needs to be "KeyBoard + Mouse + Joystick"
 5.  go to Sketch > Include Library > LCqueue	(this will be under "contributed libraries")
-6.  There are currently instructions in file for how to customize the software, which you can go through. I plan on including a more comprehensive guide soon.
-7.  Assuming you have the code configured how you like, you're done! You just need to press the upload button to try out your scripts. 
-		   
+6.  At this point, the code can be compiled. 
+  - There are currently instructions in file for how to customize the software, which you can go through. I plan on including a more comprehensive guide soon. 
+
 ##Important Links and resources			   
 Teensyduino & Arduino IDE (May need to be a legacy release for teensyduino compatibility, check the download and install instructions on PJRC for details)
+
 http://www.pjrc.com/teensy/td_download.html
 
 AutoHotKey (for software macro's. It's really good, and more flexible than what can be implemented from hardware.)
+
 http://ahkscript.org/
 
 Guides on PJRC for the Keyboard, Mouse and Joystick libraries
+
 http://www.pjrc.com/teensy/td_keyboard.html
 http://www.pjrc.com/teensy/td_mouse.html
 http://www.pjrc.com/teensy/td_joystick.html
+

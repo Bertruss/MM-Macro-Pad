@@ -39,10 +39,10 @@ const unsigned long cooldownt[] PROGMEM = {
         };
 
 //LONGHOLD 
-// this is where you set the time to "longhold state", where if you've been holding down the button for 
-// longer than the set longhold time for that button, the buttons associated operation runs repeatedly. 
-// This mirrors what you expect a normal keyboard to do with a single ascii character. I wouldn't recommend 
-// having this enabled for anything particularly complicated.
+// this is where you set the time to "longhold state", where if you've been holding down a button for 
+// longer than the set longhold time for that button, the button's associated operation runs repeatedly. 
+// This mirrors what you expect a normal keyboard to do with a button for a single ascii character. I wouldn't recommend 
+// having this enabled for anything particularly complicated. 
 // NOTE: These numbers are in ms, the associated button's identifier is commented next to each longhold #.
 // 2nd NOTE: Longhold is not blocked by cooldown. e.g. a button with a cooldown of 2 seconds and a longhold 
 // of 1 second will still reach longhold state in 1 second. cooldown only applies to buttons that have been 
