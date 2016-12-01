@@ -1,18 +1,22 @@
 //Arduino doesn't like C libs, apparently. that's why this is here. 
-//uncomment these lines for use as an arduino library
-//#ifdef __cplusplus
-//extern "C" {
-//#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#ifndef _LCQUEUE_H_
-#define _LCQUEUE_H_
+#ifndef _KEYQUEUE_H_
+#define _KEYQUEUE_H_
 
 
 //doubly linked node structure
 typedef struct node{
  struct node *leading;
  struct node *trailing;
- int value;
+ int key1;
+ int key2;
+ int key3;
+ int key4;
+ int key5;
+ int key6;
 } node;
 
 
@@ -26,29 +30,27 @@ typedef struct LCqueue{
 //node instantiator
 node *new_node(int x);
 
-//LCqueue instantiator
-LCqueue *new_queue(void);
+//KeyQueue instantiator
+KeyQueue *new_queue(void);
 
 //removes first element and returns value
-int pop(LCqueue* q);
+int pop(KeyQueue* q);
 
 //adds value to end of queue
-void push(LCqueue* q,int x);
+void push(KeyQueue* q, int a, int b, int c, int d, int e, int f);
 
 //returns number of elements in the queue
-int count(const LCqueue* q);
+int count(const KeyQueue* q);
 
 //returns value of first element without removal of the element
-int front(const LCqueue* q);
+int front(const KeyQueue* q);
 
 //returns value of last element
-int end(const LCqueue* q);
+int end(const KeyQueue* q);
 
-int test(LCqueue* q);
+int test(KeyQueue* q);
 
 #endif
-
-//also, uncomment these lines.
-//#ifdef __cplusplus
-//}
-//#endif
+#ifdef __cplusplus
+}
+#endif

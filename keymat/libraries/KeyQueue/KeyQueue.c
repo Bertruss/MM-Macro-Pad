@@ -1,12 +1,11 @@
 #include <stdlib.h>
-#include "LCqueue.h"
+#include "KeyQueue.h"
 
-//simplified doubly linked-list queue
+//simplified doubly linked-list queue for storing concurrent key presses. up to 6, as this is as many as can be passed via USB.
 
-
-//LC queue memory allocation and variable instantiation
-LCqueue *new_queue(void){
-	LCqueue *temp = (LCqueue *)malloc(sizeof(LCqueue));
+//Key queue memory allocation and variable instantiation
+KeyQueue *new_queue(void){
+	KeyQueue *temp = (KeyQueue *)malloc(sizeof(KeyQueue));
 	temp->front = NULL;
 	temp->back = NULL;
 	temp->elements = 0;
@@ -14,16 +13,21 @@ LCqueue *new_queue(void){
 }
 
 //node memory allocation and variable instantiation
-node *new_node(int x){
+node *new_node(int a, int b , int c, int d, int e, int f){
 	node *temp = (node *)malloc(sizeof(node));
 	temp->leading = NULL;
 	temp->trailing = NULL;
-	temp->value = x;
+	temp->key1 = a;
+	temp->key2 = b;
+	temp->key3 = c;
+	temp->key4 = d;
+	temp->key5 = e;
+	temp->key6 = f;
 	return temp;
 }
 
 //return first elements stored value and removes the element
-int pop(LCqueue* q){
+int pop(KeyQueue* q){
 	int temp;
 	node *tempNode;
 	if(q->elements == 0){
@@ -58,9 +62,9 @@ int pop(LCqueue* q){
 }
 
 //adds element to the top of the queue which stores passed in value
-void push(LCqueue* q, int x){
+void push(KeyQueue* q, int a, int b, int c, int d, int e, int f){
 	//allocating memory
-        node *temp = new_node(x); 
+        node *temp = new_node(a,b,c,d,e,f); 
 
 	//linking all necessary links
 	
@@ -81,17 +85,17 @@ void push(LCqueue* q, int x){
 }
 
 //returns the number of nodes in the queue
-int count(const LCqueue* q){
+int count(const KeyQueue* q){
 	return q->elements;
 }
 
 //returns the value held by the first Node in the queue
-int front(const LCqueue* q){
+int front(const KeyQueue* q){
 	return q->front->value;
  }
 
 //returns the value held by the last Node in the queue
-int end(const LCqueue* q){
+int end(const KeyQueue* q){
 	return q->back->value;
 }
 
