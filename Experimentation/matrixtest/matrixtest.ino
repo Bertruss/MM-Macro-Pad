@@ -1,9 +1,10 @@
 #include <LCqueue.h>
 
 //Extensible Button Matrix using a Teensy microcontroller
-
 //author: Michael Hautman
 //year: 2016
+
+
 
 /*
  ***********************************
@@ -11,11 +12,25 @@
  ***********************************
  */
 
+/*
+ * NOTE:
+ * Button numbering, which I refer to repeatedly as "addressing" within the comments, is very simple but important to understanding the code.
+ * buttons are numbered firstly left to right then wrapping to the next row, the same order in which you would read words on a page. 
+ *
+ * ALSO: It is mentioned elsewhere, but just to re-iterate, all time is in is ms. 
+ */
+
 //NUMBER OF ROWS
 const int rows PROGMEM = 3;
 
 //NUMBER OF COLUMNS
 const int columns PROGMEM = 3;
+
+//number of buttons, utility
+const int buttons PROGMEM = rows * columns;
+
+//array for button debouncing, utility
+int button_buff[buttons];
 
 //PIN ASSIGNMENT (for the teensy)
 const int col[columns] PROGMEM = {1, 2, 3};
@@ -75,6 +90,7 @@ const unsigned long longhold_active_t PROGMEM = 200;//controls how frequently th
 // Each case # corresponds to the button's identifier in the matrix, and the script or what-have-you that you'd like to
 // have execute goes after the desired "case # :" but before the "break;".
 void KeyMap(int A){
+    hardModCheck();
     switch(A){
       case 0 : // Previous Track
           mediaFunc(KEY_MEDIA_PREV_TRACK);
@@ -112,15 +128,71 @@ void KeyMap(int A){
           joyButton(3);
           
         break;
+        //If you add more rows, more cases need to be added
+//    case # :
+//        YOUR CODE HERE;
+//      
+//      break;
+
       default :
       break;
       }
+      Keyboard.set_modifier(0);
   }
+
+//soft mod check is a simple function to see if a given button is depressed.
+//usefull for having scripted modifiers
+bool softModCheck(int I){ 
+  int cnt;
+  bool check = false;
+  for(cnt = 0; cnt <  buttons; cnt = cnt + 1){
+    if(button_buff[cnt] == I){
+      cnt = buttons;
+      check = true;
+      }
+    } 
+  }
+  
+//Place the address of the key you wish to act as a modifier inside this list in the appropriate row.  
+const int ModKeyList[][4] = {
+  {},//CTRL
+  {},//SHIFT
+  {},//ALT
+  {}//GUI(WINDOWS or MAC button)
+  };
+
+
+//Hard mods are keys that implement standard modifiers like ALT and SHIFT. 
+//In order to use these you must include them in the ModKeyList. 
+void hardModCheck(){
+  bool list[] = {false,false,false,false};
+  int currentKeyCheck;
+  int cnt;
+  int mods;
+  for(mods = 0; mods < 4; mods = mods + 1){ 
+    for(cnt = 0; cnt < (sizeof(ModKeyList[mods])/sizeof(int)); cnt = cnt + 1){
+        currentKeyCheck = ModKeyList[cnt][mods];
+        if(button_buff[currentKeyCheck] == HIGH){
+          list[mods] = true;
+          }
+      }
+    }
+
+    
+  
+  }
+
+
+/*
+ *************************************************
+ ******* *HELPER METHODS FOR CUSTOMIZATION *******
+ *************************************************
+ */
 
 //The media codes all require the press and release function calls in order to register
 //this simply makes it easier for use in the keymap function. 
 void mediaFunc(int A){ //
-    switch(A){
+        switch(A){
       case KEY_MEDIA_PREV_TRACK :
           Keyboard.press(KEY_MEDIA_PREV_TRACK);
           Keyboard.release(KEY_MEDIA_PREV_TRACK);
@@ -145,14 +217,13 @@ void mediaFunc(int A){ //
           Keyboard.press(KEY_MEDIA_MUTE);
           Keyboard.release(KEY_MEDIA_MUTE);
           break;
-    }
+    }    
   }
 
 void joyButton(int assign){//joystick buttons can be assigned from 1-32
    Joystick.button(assign, 1);      
    Joystick.button(assign, 0);
   }
-
 
 /*
  ******************************************
@@ -163,11 +234,8 @@ void joyButton(int assign){//joystick buttons can be assigned from 1-32
 //Marginally more complicated stuff down here. I didn't really plan for these next parts to be modified for individual use cases.  
 //Not that I guarantee anything, but I extra don't guarantee anything if you mess with the proceeding code.
   
-//number of buttons
-const int buttons PROGMEM = rows * columns;
 
 //arrays for button debouncing
-int button_buff[buttons];
 int button_lastState[buttons];
 unsigned long confirm_timer[buttons]; //how long since the button reached confirmed on or off state
 unsigned long debounce_timer[buttons]; //how long since the buttons state last changed
@@ -275,7 +343,8 @@ void scan(){
 
 
 //reads the current button state as determined via debounced button matrix scan, 
-//and then makes sure the press is registerable (has no withstanding cooldown, if it's exceeded longhold time, or if the output buffer has reached 100, an arbitrarily determined limit) 
+//and then makes sure the press is registerable (has no withstanding cooldown, if it's exceeded longhold time, 
+//or if the output buffer has reached 100, an arbitrarily determined limit) 
 void genOutputBuffer(){
   int cnt;
   for(cnt = 0; cnt < buttons; cnt = cnt + 1){
@@ -285,6 +354,7 @@ void genOutputBuffer(){
       } 
     }
   }
+
 
 //executes operations described by the output.
 void executeBuffer(){
