@@ -1,3 +1,22 @@
+    
+    GENERAL MARKDOWN STYLE COMMENTS:
+    
+    While it doesn't really matter that much I propost the following Markdown
+    suggestions to help keep it more readable as plaintext:
+    
+    1) Get rid of your trailing whitespace. Its really ugly.
+    2) Put a space between your heading markers and the heading text:
+        ### Debounce
+        ###debounce
+    3) Unless the only contents of a section is a list you should have a newline
+     after each heading title. Some markdown processors won't parse it properly
+     otherwise.
+    4) Wrap your text at 80 or 100 chars. Its much easier to read that way.
+    5) Remember that you can link to things in markdown with the following syntax:
+        [Link title](http://example.com)
+    6) Make use of Markdown's preformating stuff encase variable names and function
+     names in tripple backticks (`).
+    
 #BETA README
 #Extensible Button Matrix using a Teensy microcontroller
 ##Features
