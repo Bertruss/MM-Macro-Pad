@@ -151,8 +151,11 @@ bool softModCheck(int I){
       check = true;
       }
     } 
+    return check;
   }
-  
+
+
+//****CONSIDER UNIMPLEMENTED****
 //Place the address of the key you wish to act as a modifier inside this list in the appropriate row.  
 const int ModKeyList[][4] = {
   {},//CTRL
@@ -162,6 +165,7 @@ const int ModKeyList[][4] = {
   };
 
 
+//****CONSIDER UNIMPLEMENTED****
 //Hard mods are keys that implement standard modifiers like ALT and SHIFT. 
 //In order to use these you must include them in the ModKeyList. 
 void hardModCheck(){
@@ -177,11 +181,20 @@ void hardModCheck(){
           }
       }
     }
-
-    
-  
+  //turn list into a set_modifier command
   }
 
+void keyPressReset(){
+  Keyboard.send_now();
+  Keyboard.set_modifier(0);
+  Keyboard.set_key1(0);
+  Keyboard.set_key2(0);
+  Keyboard.set_key3(0);
+  Keyboard.set_key4(0);
+  Keyboard.set_key5(0);
+  Keyboard.set_key6(0);
+  Keyboard.send_now();
+  }
 
 /*
  *************************************************
@@ -302,7 +315,7 @@ bool checkCoolDown(int address){//returns true if cooldown timer is exceeded, or
     if(checkLongHold(button_cooldown_time, button_confirmed_state_change_time, address)){
       return true;
       }
-    else if((millis() - button_cooldown_time) > cooldownt[address] && button_confirmed_state_change_time > button_cooldown_time && cooldownt[address] != 0){    //if cooldown timer is exceeded, resets timer, returns true //&& button_confirmed_state_change_time > button_cooldown_time 
+    else if((millis() - button_cooldown_time) > cooldownt[address] && button_confirmed_state_change_time > button_cooldown_time && cooldownt[address] != 0){    //if cooldown timer is exceeded, resets timer, returns true
       cooldown_timer[address] = millis();
       return true;
     }                             
