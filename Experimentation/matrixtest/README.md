@@ -1,16 +1,3 @@
-    
-    GENERAL MARKDOWN STYLE COMMENTS:
-    
-    While it doesn't really matter that much I propost the following Markdown
-    suggestions to help keep it more readable as plaintext:
-
-
-    4) Wrap your text at 80 or 100 chars. Its much easier to read that way.
-    5) Remember that you can link to things in markdown with the following syntax:
-        [Link title](http://example.com)
-    6) Make use of Markdown's preformating stuff encase variable names and function
-     names in tripple backticks (`).
-    
 #BETA README
 # Extensible Button Matrix using a Teensy microcontroller
 
@@ -19,11 +6,13 @@
 ### Debounce
 
  - cleans input of noise that occurs from switch depressing.
+ 
    - there are pre-made libs for this in teensyduino, but I wrote my own code.
 
 ### Button cooldown
 
   - can help prevent accidental double activation of a key function by way of rapid double tap.
+  
   - Independent values for each button, adjusted via the associated value in the ```cooldownt``` array
  
   - when you disable the cooldown timer, button presses are still only registered once assuming it passes debounce
@@ -31,14 +20,17 @@
 ### Longhold
 
   - you know when you hold a button for more than a second it just acts like continuous presses. that thing.
-  - Independent values for each button, adjusted via the associated value in the ```longholdt``` array 
+  
+  - Independent values for each button, adjusted via the associated value in the ```longholdt``` array
+  
   - disabled by being set to 0
+  
   - is not blocked by cooldown
   
 ### Media Keys
 
   - functions for easy mapping of media controls to keys
-         
+
 ### Fully rebindable
 
   - Each key is read as their address, that address is then mapped to a case in the keymap function, which essentially
@@ -50,7 +42,6 @@
   - Many parts will have to be manually adjusted to account, but I have tried to make it as painless
     as possible to make your own matrix with however many rows and columns as you might want.
 	Admittedly, it's still a huge hassle, but this is being worked on.
-	
 
 note: all time is counted in ms, or 1/1000 of a second
 
@@ -81,9 +72,9 @@ In order to use this code with your teensy, you must:
   - There are currently instructions in file for how to customize the software, which you can go through. I plan on including a more comprehensive guide soon.
 
 ##Important Links and resources
-(Teensyduino)[http://www.pjrc.com/teensy/td_download.html] & (Arduino IDE)[https://www.arduino.cc/en/Main/Software] (May need to be a legacy release for teensyduino compatibility, check the download and install instructions on PJRC for details)
+[Teensyduino](http://www.pjrc.com/teensy/td_download.html) & [Arduino IDE](https://www.arduino.cc/en/Main/Software) (May need to be a legacy release for teensyduino compatibility, check the download and install instructions on PJRC for details)
 
-(AutoHotKey)[http://ahkscript.org/] (for software macro's. It's really good, and more flexible than what can be implemented from hardware.)
+[AutoHotKey](http://ahkscript.org/) (for software macro's. It's really good, and more flexible than what can be implemented from hardware.)
 
 Guides on PJRC for the [Keyboard](http://www.pjrc.com/teensy/td_keyboard.html), [Mouse](http://www.pjrc.com/teensy/td_mouse.html) and [Joystick](http://www.pjrc.com/teensy/td_joystick.html) libraries
 
