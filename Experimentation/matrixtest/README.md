@@ -26,10 +26,6 @@
   - disabled by being set to 0
   
   - is not blocked by cooldown
-  
-### Media Keys
-
-  - functions for easy mapping of media controls to keys
 
 ### Fully rebindable
 
