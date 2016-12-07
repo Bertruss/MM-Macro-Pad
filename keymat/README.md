@@ -12,7 +12,7 @@
 
   - can help prevent accidental double activation of a key function by way of rapid double tap.
   
-  - Independent values for each button, adjusted via the associated value in the ```cooldownt``` array
+  - Independent values for each button, adjusted via the associated value in the ```cooldown_time``` array
  
   - when you disable the cooldown timer, button presses are still only registered once assuming it passes debounce
 
@@ -20,7 +20,7 @@
 
   - you know when you hold a button for more than a second it just acts like continuous presses. that thing.
   
-  - Independent values for each button, adjusted via the associated value in the ```longholdt``` array
+  - Independent values for each button, adjusted via the associated value in the ```longhold_time``` array
   
   - disabled by being set to 0
   
