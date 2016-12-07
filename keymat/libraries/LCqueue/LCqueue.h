@@ -4,9 +4,10 @@
 //extern "C" {
 //#endif
 
+#include <stdbool.h>
+
 #ifndef _LCQUEUE_H_
 #define _LCQUEUE_H_
-
 
 //doubly linked node structure
 typedef struct node{
@@ -44,7 +45,8 @@ int front(const LCqueue* q);
 //returns value of last element
 int end(const LCqueue* q);
 
-int test(LCqueue* q);
+//returns true if the queue is empty 
+bool isEmpty(const LCqueue* q);
 
 #endif
 

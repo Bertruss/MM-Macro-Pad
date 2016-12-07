@@ -1,8 +1,8 @@
 #include <stdlib.h>
+#include <stdbool.h>
 #include "LCqueue.h"
 
 //simplified doubly linked-list queue
-
 
 //LC queue memory allocation and variable instantiation
 LCqueue *new_queue(void){
@@ -95,4 +95,8 @@ int end(const LCqueue* q){
 	return q->back->value;
 }
 
+//returns true if the queue is empty
+bool isEmpty(const LCqueue* q){
+	return (q->elements == 0);
+}
 
