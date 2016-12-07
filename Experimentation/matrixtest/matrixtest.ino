@@ -4,10 +4,8 @@
 */
 
 #include <LCqueue.h>
-
 // `a` is the code for the key press you wish to pass.
 #define STANDARD_KEY_PRESS(a) Keyboard.press(a); Keyboard.release(a);
-
 // `a` is the number of the joystick button you wish to transmit a
 // keypress of.
 #define JOYSTICK_BUTTON_PRESS(a) Joystick.button(a, 1);
@@ -37,10 +35,12 @@
 // Array for button debouncing
 int button_buff[BUTTONS];
 
-// Pin Assignment for the columns and rows of
+// Pin Assignment for the columns and rows of the key matrix 
+// You must assign as many pins as there are columns and rows
 const int col[NUM_COLUMNS] PROGMEM = {1, 2, 3};
 const int row[NUM_ROWS] PROGMEM = {9, 10, 11};
 
+#define TEST {1,2,3,4}
 /* BUTTON COOLDOWN
    This array is where you would set the cooldown time for each button.
    This is useful if there are any functions that you want to ensure can't have an accidental double activation.
@@ -58,7 +58,6 @@ const unsigned long cooldown_time[] PROGMEM = {
   0   // 8
   // Needs to be extended to the correct number of buttons if more columns or rows are added
 };
-
 
 /* LONGHOLD
    This is where you set the length of time to "longhold state" for each key, where if you've been holding down a button for
@@ -166,7 +165,6 @@ bool softModCheck(int I) {
   return isPressedCheck;
 }
 
-
 // Place the address of the key you wish to act as a modifier inside this list in the appropriate row.
 const int ModKeyList[][2] = {
   {},// CTRL
@@ -175,8 +173,7 @@ const int ModKeyList[][2] = {
   {}// GUI(WINDOWS or MAC button)
 };
 
-
-
+// __Untested__
 // Hard mods are keys that implement standard modifiers like ALT and SHIFT.
 // In order to use these you must include them in the ModKeyList.
 void hardModCheck() {
@@ -184,8 +181,8 @@ void hardModCheck() {
   int currentKeyCheck = 0;
   int cnt = 0;
   int mods = 0;
-  size_t num;//number of modifiers of a certain type
-  for (mods = 0; mods < 4; mods++) {
+  int num;//number of modifiers of a certain type
+  for(mods = 0; mods < 4; mods++) {
     num = (sizeof(ModKeyList[mods]) / sizeof(int));
     if (num != 0) {
       for (cnt = 0; cnt < num; cnt++) {
