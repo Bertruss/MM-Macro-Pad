@@ -18,7 +18,7 @@
 
 /*
    NOTE:
-   Button numbering, which I refer to repeatedly as "address" within the comments, is very simple but important to understanding the code.
+   Button numbering, which is refered to repeatedly as "address" within the comments, is very simple but important to understanding the code.
    buttons are numbered firstly left to right then wrapping to the next row, the same order in which you would read words on a page.
    It is mentioned elsewhere, but just to re-iterate, all time is in is ms.
 */
@@ -40,11 +40,13 @@ int button_buff[BUTTONS];
 const int col[NUM_COLUMNS] PROGMEM = {1, 2, 3};
 const int row[NUM_ROWS] PROGMEM = {9, 10, 11};
 
-#define TEST {1,2,3,4}
 /* BUTTON COOLDOWN
    This array is where you would set the cooldown time for each button.
-   This is useful if there are any functions that you want to ensure can't have an accidental double activation.
-   NOTE: These numbers are in ms, the associated button's identifier is commented next to each cooldown #.
+   This is useful if there are any functions that you want to ensure can't 
+   have an accidental double activation.
+   
+   NOTE: These numbers are in ms, the associated button's address is commented 
+   next to each cooldown #.
 */
 const unsigned long cooldown_time[] PROGMEM = {
   0,  // 0
@@ -270,11 +272,15 @@ bool checkLongHold(unsigned long button_cooldown_time,  unsigned long button_con
       after the state change reset because of the order of the flow. This next part is broken up to be
       easier to explain and read.
   */
-  if (button_cooldown_time >= button_confirmed_state_change_time && longholdt[address] != 0) { // If the last time buttonstate changed was before the last time the cooldown timer was reset, continues.
+  if (button_cooldown_time >= button_confirmed_state_change_time && longholdt[address] != 0) { // If the last time buttonstate changed was 
+                                                                                               // before the last time the cooldown timer was
+                                                                                               // reset, continues.
 
-    if ((millis() - button_cooldown_time) > longholdt[address]) { // If the button has been held down long enough for a long hold mode activation
+    if ((millis() - button_cooldown_time) > longholdt[address]) { // If the button has been held down long enough 
+                                                                  // for a long hold mode activation
 
-      if ((millis() - longhold_timer[address]) > longhold_active_t) { // This is another timer checker used to limit how fast the longhold state registers activations
+      if ((millis() - longhold_timer[address]) > longhold_active_t) { // This is another timer checker used to limit 
+                                                                      // how fast the longhold state registers activations
         longhold_timer[address] = millis();
         return true;
       }
@@ -291,14 +297,14 @@ bool checkCoolDown(int address) { // Returns true if cooldown timer is exceeded,
   if (checkLongHold(button_cooldown_time, button_confirmed_state_change_time, address)) {
     return true;
   }
-  else if (cooldown_time[address] != 0   									 // If the button has a cooldown timer set
-           && button_confirmed_state_change_time > button_cooldown_time     // and the last time the buttons confirmed state change is sooner
+  else if (cooldown_time[address] != 0                                       // If the button has a cooldown timer set
+           && button_confirmed_state_change_time > button_cooldown_time      // and the last time the buttons confirmed state change is sooner
            && (millis() - button_cooldown_time) > cooldown_time[address] ) { // than the last time button cooldown was reset and cooldown timer is exceeded
-    cooldown_timer[address] = millis();                                  // resets timer, returns true
+    cooldown_timer[address] = millis();                                      // resets timer, returns true
     return true;
   }
   else if (button_confirmed_state_change_time > button_cooldown_time) { // Makes sure that if the cooldown is disabled, one button
-    cooldown_timer[address] = millis();								// press still only registers once unless longhold is exceeded
+    cooldown_timer[address] = millis();				  // press still only registers once unless longhold is exceeded
     return true;
   }
   else {
