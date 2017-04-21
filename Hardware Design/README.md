@@ -1,4 +1,4 @@
-#Parts Manifest:
+# Parts Manifest:
  
 Teensy-LC w/ header pins, $17
  - Source: Amazon
@@ -24,13 +24,13 @@ Set of 9 transluscent keycaps (WASD, ARROWS, ESC), $6.99
 	  and are in many cases cheaper 
 
 
-##Face-Plate template:
+## Face-Plate template:
  - The faceplate vector file is for cherry MX keyswitches.
   - Useful resources:
    - http://builder.swillkb.com/
    - http://www.keyboard-layout-editor.com/#/
 
-##Enclosure Model
+## Enclosure Model
 - The enclosure STL and 123D files are my attempts at an easily 3d-printable enclosure. Your mileage may vary  
 
 
