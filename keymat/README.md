@@ -66,7 +66,7 @@ In order to use this code with your teensy, you must:
 6.  At this point, the code can be compiled.
   - There are currently instructions in file for how to customize the software, which you can go through. I plan on including a more comprehensive guide soon.
 
-##Important Links and resources
+## Important Links and resources
 [Teensyduino](http://www.pjrc.com/teensy/td_download.html) & [Arduino IDE](https://www.arduino.cc/en/Main/Software) (May need to be a legacy release for teensyduino compatibility, check the download and install instructions on PJRC for details)
 
 [AutoHotKey](http://ahkscript.org/) (for software macro's. It's really good, and more flexible than what can be implemented from hardware.)
