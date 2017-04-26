@@ -13,17 +13,15 @@ Code and various design artifacts for build of a key matrix, for use as a macro-
   - all typical keyboard key assignments
 - support for scripting
 - can be adjusted to any number of rows or columns
+- Implementation of animations and controls for LED lighting
 
-## additional design goals (yet to be implemented)
+## additional design goals 
 - multiple modes for macros and functions.
-- modifier keys for multi-key macros.
-- led lighting that is reactive to input
 
 ## Hardware
 - Hardware folder contains design files for the layout of the keypad.
-	- layout for the faceplate
-	- rough parts manifest, with available sources and cost estimation
-
+	- .stl model for main housing  
+	- parts manifest, with available sources and cost estimation
 
 ## Instructions for compilation & custom configuration as well as
 ## release source can be found in the Keymat folder. 
