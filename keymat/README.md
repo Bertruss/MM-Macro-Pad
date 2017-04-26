@@ -10,7 +10,7 @@
 
   - Can help prevent accidental double activation of a key function by way of rapid double tap.
   - Independent values for each button, adjusted via the associated value in the ```cooldown_time``` array
-  - When you disable the cooldown timer, button presses are still only registered once assuming it passes debounce
+  - When you disable the cooldown timer, button presses are still only registered once assuming it passes the debounce check.
 
 ### Longhold
 
@@ -18,7 +18,7 @@
   - Independent values for each button, adjusted via the associated value in the ```longhold_time``` array
   - Disabled by being set to 0
   - Not blocked by cooldown
-
+  
 ### Fully rebindable
 
 Each key is read as their address, that address is then mapped to a case in the keymap function, which 
@@ -30,7 +30,7 @@ signals that can be sent from the teensy can be found at the bottom of this docu
 
 Many parts will have to be manually adjusted, but I have tried to make it as painless
 as possible to make your own matrix with however many rows and columns as you might want. 
-dmittedly, it's still a huge hassle.
+Admittedly, it's still a huge hassle.
 
 note: all time is counted in ms, or 1/1000 of a second
 
@@ -45,6 +45,15 @@ The number on each key in the map below marks its address in the buffer as well 
                |----|----|----|
              2 | 6  | 7  | 8  |
                |----|----|----|
+
+### Limited PWM LED animations and profiles for backlighting
+ 
+Anyone truly wanting impressive lighting effects will likely want to use a seperate IC made for PWM LED control as the teensyLC has 
+a limited number of PWM pins. The current implementation of lighting animations and controls treats each row of
+switches as single lighting entities (being wired in parallel to a single PWM pin), limiting the animation's complexity significantly.
+The implemented animations are mostly soft flicker, and various profiles for sinusoidal pulsing. Because the profiles are so specific to my build, 
+I've left this code out of the main build. The build with the lighting implementation can be found in the Keymat_Light subfolder in this 
+directory. 
 
 ## Instructions For Use
 In order to use this code with your teensy, you must:
