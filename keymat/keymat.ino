@@ -2,8 +2,15 @@
    author: Michael Hautman
    year: 2016
 */
-
 #include <LCqueue.h>
+
+// `a` is the code for the key press you wish to pass.
+#define STANDARD_KEY_PRESS(a) Keyboard.press(a); Keyboard.release(a);
+
+// `a` is the number of the joystick button you wish to transmit a
+// keypress of.
+#define JOYSTICK_BUTTON_PRESS(a) Joystick.button(a, 1); delay(50); Joystick.button(a, 0);
+
 
 //function prototypes
 void KeyMap(int address);
@@ -17,18 +24,6 @@ void scan();
 void genOutputBuffer();
 void executeBuffer();
 
-void setup();
-void loop();
-
-
-// `a` is the code for the key press you wish to pass.
-#define STANDARD_KEY_PRESS(a) Keyboard.press(a); Keyboard.release(a);
-
-// `a` is the number of the joystick button you wish to transmit a
-// keypress of.
-#define JOYSTICK_BUTTON_PRESS(a) Joystick.button(a, 1);
-
-
 /*
  ***********************************
  ****** CUSTOMIZABLE ELEMENTS*******
@@ -37,7 +32,7 @@ void loop();
 
 /*
    NOTE:
-   Button numbering, which is referred to repeatedly as "address" within the comments, is very simple 
+   Button numbering, referred to often as "address" within the comments, is very simple 
    but important to understanding the code. buttons are numbered firstly left to right then wrapping 
    to the next row, the same order in which you would read words on a page. It is mentioned elsewhere, 
    but just to re-iterate, all time is in is ms.
@@ -59,7 +54,6 @@ int button_buff[BUTTONS];
 // You must assign as many pins as there are columns and rows
 const int col[NUM_COLUMNS] PROGMEM = {0,1,2}; //these are the pins that are read
 const int row[NUM_ROWS] PROGMEM = {8, 9, 10}; //these are the pins that are set
-const int modeKey PROGMEM = 12;
 
 /* BUTTON COOLDOWN
    This array is where you would set the cooldown time for each button.
@@ -154,8 +148,9 @@ void KeyMap(int address) {
  
       break;
     case 7 : //joystick 2
+      if(softModCheck)
       JOYSTICK_BUTTON_PRESS(2);
- 
+      
       break;
     case 8 : //joystick 3
       JOYSTICK_BUTTON_PRESS(3);
@@ -174,74 +169,18 @@ void KeyMap(int address) {
     default :
       break;
   }
-
 }
 
 // Soft Mod check is a simple function to see if a given button is depressed.
 // Usefull for having scripted modifiers
 bool softModCheck(int I) {
-  int address;
-  bool isPressedCheck = false;
-  for (address = 0; address <  BUTTONS; address++) {
+  for ( int address = 0; address <  BUTTONS; address++) {
     if (button_buff[address] == I) {
       address = BUTTONS;
-      isPressedCheck = true;
+      return true;
     }
   }
-  return isPressedCheck;
 }
-
-/* WIP
-  // Place the address of the key you wish to act as a modifier inside this list in the appropriate row.
-  // If you wish to have more than two of any particular mod key the second dimension of the array 
-  // must be edited.-----v 
-  const int ModKeyList[][2] = {
-    {},// CTRL
-    {},// SHIFT
-    {},// ALT
-    {}// GUI(WINDOWS or MAC button)
-  };
-  
-    // Hard mods are keys that implement standard modifiers like ALT and SHIFT.
-    // In order to use these you must include them in the ModKeyList.
-    void hardModCheck() {
-      bool isPressedList[] = {false, false, false, false};
-      int currentKeyCheck = 0;
-      int cnt = 0;
-      int mods = 0;
-      int num;//number of modifiers of a certain type
-      for(mods = 0; mods < 4; mods++) {
-        num = (sizeof(ModKeyList[mods]) / sizeof(int));
-        if (num != 0) {
-          for (cnt = 0; cnt < num; cnt++) {
-            currentKeyCheck = ModKeyList[cnt][mods];
-            if (button_buff[currentKeyCheck] == HIGH) {
-              isPressedList[mods] = true;
-            }
-          }
-        }
-      }
-      //turn confirmed key presses into sent key presses here.
-      if (isPressedList[3]) {
-        Keyboard.set_modifier(MODIFIERKEY_GUI);
-      }
-      if (isPressedList[0]) {
-        if (isPressedList[1] && !isPressedList[2]) {
-          Keyboard.set_modifier(MODIFIERKEY_CTRL | MODIFIERKEY_SHIFT);
-        }
-        else if (isPressedList[2] && !isPressedList[1]) {
-          Keyboard.set_modifier(MODIFIERKEY_CTRL | MODIFIERKEY_ALT);
-        }
-        else {
-          Keyboard.set_modifier(MODIFIERKEY_CTRL);
-        }
-      } else if (isPressedList[1]) {
-        Keyboard.set_modifier(MODIFIERKEY_SHIFT);
-      } else if (isPressedList[2]) {
-        Keyboard.set_modifier(MODIFIERKEY_ALT);
-      }
-    }
-*/
 
 /*
  ******************************************
@@ -336,8 +275,7 @@ bool checkExceptionTimers(int address) { // Returns true if cooldown timer is ex
 
 // Sets chosen row high and all others low
 void rowSet(int rowIn) {
-  int cnt;
-  for (cnt = 0; cnt < NUM_ROWS; cnt = cnt + 1) {
+  for (int cnt = 0; cnt < NUM_ROWS; cnt = cnt + 1) {
     if (cnt == rowIn) {
       digitalWrite(row[cnt], HIGH);
     }
@@ -350,11 +288,9 @@ void rowSet(int rowIn) {
 
 // Checks every button in the matrix, runs "debounce" on it
 void scan() {
-  //numbered by array index 0 to 2.
-  int rownum, colnum;
-  for (rownum = 0; rownum < NUM_ROWS; rownum = rownum + 1) {      // Increments rownum
+  for (int rownum = 0; rownum < NUM_ROWS; rownum = rownum + 1) {      // Increments rownum
     rowSet(rownum);                                               // and sets the row with that number to HIGH.
-    for (colnum = 0; colnum < NUM_COLUMNS; colnum = colnum + 1) { // Increments colnum
+    for (int colnum = 0; colnum < NUM_COLUMNS; colnum = colnum + 1) { // Increments colnum
       debounce(rownum, colnum);                                   // and runs "debounce" on that column
     }
   }
@@ -365,8 +301,7 @@ void scan() {
    if it's exceeded longhold time, or if the output buffer has reached 100, an arbitrarily determined limit).
 */
 void genOutputBuffer() {
-  int address;
-  for (address = 0; address < BUTTONS; address++) {
+  for (int address = 0; address < BUTTONS; address++) {
     int state = button_buff[address];
     if (state == HIGH && checkExceptionTimers(address) && (count(outputBuffer) < 100)) {
       push(outputBuffer, address);
@@ -383,12 +318,11 @@ void executeBuffer() {
 
 // Runs once before loop()
 void setup() {
-  int cnt;
   //button matrix instantiation
-  for (cnt = 0; cnt < NUM_ROWS; cnt++) {    // Instantiates every pin in row[] to OUTPUT
+  for (int cnt = 0; cnt < NUM_ROWS; cnt++) {    // Instantiates every pin in row[] to OUTPUT
     pinMode(row[cnt], OUTPUT);
   }
-  for (cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
+  for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
     pinMode(col[cnt], INPUT_PULLUP);
   }
   outputBuffer = new_queue();               // Allocating memory for queue
