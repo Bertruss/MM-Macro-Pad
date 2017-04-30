@@ -167,11 +167,11 @@ void KeyMap(int address) {
       
       break;
     case 7 : //joystick 2
-      if(softModCheck(6)){ //cycle through light presets
+      if(softModCheck(6)){ //cycle through lighting presets
         if(lightConf < 4){
             lightConf++;
           } else {
-            lightConf = 1;  
+            lightConf = 0;  
           }
           lightingConfPresets(lightConf);
       } else {
@@ -260,11 +260,13 @@ void lightFlame(){
 void lightingConfPresets(int set){
   switch (set) {
     case 0 : //sin wave: move down
+      lightRowSettings[0].phase = 0; 
       lightRowSettings[1].phase = .5;
       lightRowSettings[2].phase = 1;     
       lightSetting = 1;
       break;
     case 1 : //sin wave: move up
+      lightRowSettings[2].phase = 0; 
       lightRowSettings[1].phase = .5;
       lightRowSettings[0].phase = 1; 
       lightSetting = 1;
@@ -277,10 +279,10 @@ void lightingConfPresets(int set){
       lightSetting = 1;
       break;
      case 3 : //sin wave: short pulse up
-      for(int cnt = 0;cnt < 3;cnt++){
+      for(int cnt = 0;cnt < 3; cnt++){
         lightRowSettings[cnt].range = 10 + 15*cnt;
         lightRowSettings[cnt].midInt = 0;
-        lightRowSettings[cnt].phase = 1 - .35 * cnt;
+        lightRowSettings[cnt].phase = 0 + .35 * cnt;
       }
       break;
     case 4 :

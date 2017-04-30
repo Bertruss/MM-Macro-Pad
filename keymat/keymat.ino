@@ -8,7 +8,7 @@
 #define STANDARD_KEY_PRESS(a) Keyboard.press(a); Keyboard.release(a);
 
 // `a` is the number of the joystick button you wish to transmit a
-// keypress of.
+// keypress of. The delay is necessary for the press to be registered. 
 #define JOYSTICK_BUTTON_PRESS(a) Joystick.button(a, 1); delay(50); Joystick.button(a, 0);
 
 
@@ -174,12 +174,11 @@ void KeyMap(int address) {
 // Soft Mod check is a simple function to see if a given button is depressed.
 // Usefull for having scripted modifiers
 bool softModCheck(int I) {
-  for ( int address = 0; address <  BUTTONS; address++) {
-    if (button_buff[address] == I) {
-      address = BUTTONS;
-      return true;
+  if(button_buff[I] == 1){
+    return true;
+  } else {
+    return false;
     }
-  }
 }
 
 /*
