@@ -47,7 +47,7 @@ void executeBuffer();
 // Number of buttons
 #define BUTTONS (NUM_ROWS * NUM_COLUMNS)
 
-// Array for button debouncing
+// Array that holds debounced button value
 int button_buff[BUTTONS];
 
 // Pin Assignment for the columns and rows of the key matrix 
@@ -148,7 +148,6 @@ void KeyMap(int address) {
  
       break;
     case 7 : //joystick 2
-      if(softModCheck)
       JOYSTICK_BUTTON_PRESS(2);
       
       break;
@@ -178,7 +177,7 @@ bool softModCheck(int I) {
     return true;
   } else {
     return false;
-    }
+  }
 }
 
 /*
@@ -322,7 +321,7 @@ void setup() {
     pinMode(row[cnt], OUTPUT);
   }
   for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
-    pinMode(col[cnt], INPUT_PULLUP);
+    pinMode(col[cnt], INPUT);
   }
   outputBuffer = new_queue();               // Allocating memory for queue
 }

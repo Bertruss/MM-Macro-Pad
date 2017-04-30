@@ -461,7 +461,7 @@ void setup() {
     pinMode(row[cnt], OUTPUT);
   }
   for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
-    pinMode(col[cnt], INPUT_PULLUP);
+    pinMode(col[cnt], INPUT);
   }
   for (int cnt = 0; cnt < NUM_LED; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
     pinMode(LEDpin[cnt], OUTPUT);
