@@ -72,6 +72,7 @@ const int col[NUM_COLUMNS] PROGMEM = {0,1,2}; //these are the pins that are read
 const int row[NUM_ROWS] PROGMEM = {8, 9, 10}; //these are the pins that are set
 const int LEDpin[NUM_ROWS] PROGMEM = {3,4,6}; //these are the PMW pins for the LEDS
 int lightSetting = 1;
+int lightConf = 3;
 
 /* BUTTON COOLDOWN
    This array is where you would set the cooldown time for each button.
@@ -166,9 +167,16 @@ void KeyMap(int address) {
       
       break;
     case 7 : //joystick 2
-    softModCheck(6)
-      JOYSTICK_BUTTON_PRESS(2);
-
+      if(softModCheck(6)){ //cycle through lighting presets
+        if(lightConf < 4){
+            lightConf++;
+          } else {
+            lightConf = 0;  
+          }
+          lightingConfPresets(lightConf);
+      } else {
+        JOYSTICK_BUTTON_PRESS(2);
+      }
       
       break;
     case 8 : //joystick 3
@@ -194,12 +202,11 @@ void KeyMap(int address) {
 // Soft Mod check is a simple function to see if a given button is depressed.
 // Usefull for having scripted modifiers
 bool softModCheck(int I) {
-  for (int address = 0; address <  BUTTONS; address++) {
-    if (button_buff[address] == I) {
-      address = BUTTONS;
-      return true;
+  if(button_buff[I] == 1){
+    return true;
+  } else {
+    return false;
     }
-  }
 }
 
 /*
@@ -253,11 +260,13 @@ void lightFlame(){
 void lightingConfPresets(int set){
   switch (set) {
     case 0 : //sin wave: move down
+      lightRowSettings[0].phase = 0; 
       lightRowSettings[1].phase = .5;
       lightRowSettings[2].phase = 1;     
       lightSetting = 1;
       break;
     case 1 : //sin wave: move up
+      lightRowSettings[2].phase = 0; 
       lightRowSettings[1].phase = .5;
       lightRowSettings[0].phase = 1; 
       lightSetting = 1;
@@ -270,16 +279,16 @@ void lightingConfPresets(int set){
       lightSetting = 1;
       break;
      case 3 : //sin wave: short pulse up
-      for(int cnt = 0;cnt < 3;cnt++){
+      for(int cnt = 0;cnt < 3; cnt++){
         lightRowSettings[cnt].range = 10 + 15*cnt;
         lightRowSettings[cnt].midInt = 0;
-        lightRowSettings[cnt].phase = 1 - .35 * cnt;
+        lightRowSettings[cnt].phase = 0 + .35 * cnt;
       }
       break;
     case 4 :
       for(int cnt = 0;cnt < 3;cnt++){
         lightRowSettings[cnt].phase = 0;
-        lightRowSettings[cnt].speed = 2;
+        lightRowSettings[cnt].speed = 1;
         lightRowSettings[cnt].range = 35;
         lightRowSettings[cnt].midInt = 45;
       }
@@ -419,7 +428,7 @@ void rowSet(int rowIn) {
 void scan() {
   for (int rownum = 0; rownum < NUM_ROWS; rownum = rownum + 1) {      // Increments rownum
     rowSet(rownum);                                               // and sets the row with that number to HIGH.
-    for (colnum = 0; colnum < NUM_COLUMNS; colnum = colnum + 1) { // Increments colnum
+    for (int colnum = 0; colnum < NUM_COLUMNS; colnum = colnum + 1) { // Increments colnum
       debounce(rownum, colnum);                                   // and runs "debounce" on that column
     }
   }
@@ -452,7 +461,7 @@ void setup() {
     pinMode(row[cnt], OUTPUT);
   }
   for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
-    pinMode(col[cnt], INPUT_PULLUP);
+    pinMode(col[cnt], INPUT);
   }
   for (int cnt = 0; cnt < NUM_LED; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
     pinMode(LEDpin[cnt], OUTPUT);
@@ -460,7 +469,7 @@ void setup() {
   lightRowSettings[0] = row1Light;
   lightRowSettings[1] = row2Light;
   lightRowSettings[2] = row3Light;
-  lightingConfPresets(3);
+  lightingConfPresets(lightConf);
   outputBuffer = new_queue();               // Allocating memory for queue
 }
 

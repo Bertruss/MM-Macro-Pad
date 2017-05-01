@@ -8,7 +8,7 @@
 #define STANDARD_KEY_PRESS(a) Keyboard.press(a); Keyboard.release(a);
 
 // `a` is the number of the joystick button you wish to transmit a
-// keypress of.
+// keypress of. The delay is necessary for the press to be registered. 
 #define JOYSTICK_BUTTON_PRESS(a) Joystick.button(a, 1); delay(50); Joystick.button(a, 0);
 
 
@@ -47,7 +47,7 @@ void executeBuffer();
 // Number of buttons
 #define BUTTONS (NUM_ROWS * NUM_COLUMNS)
 
-// Array for button debouncing
+// Array that holds debounced button value
 int button_buff[BUTTONS];
 
 // Pin Assignment for the columns and rows of the key matrix 
@@ -148,7 +148,6 @@ void KeyMap(int address) {
  
       break;
     case 7 : //joystick 2
-      if(softModCheck)
       JOYSTICK_BUTTON_PRESS(2);
       
       break;
@@ -174,11 +173,10 @@ void KeyMap(int address) {
 // Soft Mod check is a simple function to see if a given button is depressed.
 // Usefull for having scripted modifiers
 bool softModCheck(int I) {
-  for ( int address = 0; address <  BUTTONS; address++) {
-    if (button_buff[address] == I) {
-      address = BUTTONS;
-      return true;
-    }
+  if(button_buff[I] == 1){
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -323,7 +321,7 @@ void setup() {
     pinMode(row[cnt], OUTPUT);
   }
   for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
-    pinMode(col[cnt], INPUT_PULLUP);
+    pinMode(col[cnt], INPUT);
   }
   outputBuffer = new_queue();               // Allocating memory for queue
 }
