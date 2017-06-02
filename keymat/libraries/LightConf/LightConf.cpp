@@ -2,24 +2,65 @@
 // for Arduino or Arduino library compatible devices  
 #include "Arduino.h"
 #include "Wire.h"
-#include "LightConf.h"
+#include "LightHandler.h"
 
-void LightConf::lightWaveSin() {
+//scrubs int math for storage in uint8_t
+void LightHandler::Brightnesslimit(int *x) {
+	if(x < 0){
+		x = 0;
+	} else if(x > 255){
+		x = 255;
+	}
+}
+
+void LightHandler::lightWaveSin() {
+	int brightness;
 	for (int cnt = 0; cnt < NumLED; cnt++) {
-		lightSettings[cnt].brightness = lightSettings[cnt].range * sin(PI*(lightSettings[cnt].phase) + PI* millis() / (1000)*lightSettings[cnt].speed) + lightSettings[cnt].midInt;
+		brightness = lightSettings[cnt].range * sin(PI*(lightSettings[cnt].phase) + PI* millis() / (1000)*lightSettings[cnt].speed) + lightSettings[cnt].midInt;
+		Brightnesslimit(brightness);
+		lightSettings[cnt].brightness = brightness;
 	}
 }
 
-void LightConf::lightIntensityMod(int x) {
-	for (int cnt = 0; cnt < 3; cnt++) {
+//random flashes
+//follows a (-(x-1)^2 + 1) curve for growing brighter then fading.
+//reaches peak brightness at blipDuration/2
+void void LightHandler::blip() {
+	int brightness;
+	int blipDuration = 500; 
+	unsigned long currentTime = millis();
+	unsigned long timeSinceBlipTrue = currentTime - lightSettings[cnt].lastblip;
+	for (int cnt = 0; cnt < NumLED; cnt++) {
+		if(lightSettings[cnt].blip){
+			uint8_t max = lightSettings[cnt].midInt + lightSettings[cnt].range;
+			uint8_t variance = lightSettings[cnt].range - lightSettings[cnt].midInt;
+			brightness = variance*(-(timeSinceBlipTrue/(blipDuration/2) - 1)^2 + 1) + lightSettings[cnt].midInt; //follows a -(x-1)^2 + 1 curve for growing brighter then fading.
+			Brightnesslimit(brightness);
+			lightSettings[cnt].brightness = brightness;
+			if ()
+			
+		}else{
+			if(random(0, 1000) < 1000*(lightSettings[cnt].TTblip/(timeSinceBlip))){
+				lightSettings[cnt].lastblip = currentTime;
+				lightSettings[cnt].blip = true;
+			}
+		}
+	}
+}
+
+
+void LightHandler::lightIntensityMod(int x) {
+	for (int cnt = 0; cnt < NumLED; cnt++) {
 		lightSettings[cnt].midInt += x;
+		Brightnesslimit(lightSettings[cnt].brightness);
 	}
 }
 
-void LightConf::lightingSettingsPresets(int set) {
+void LightHandler::lightingSettingsPresets(int set) {
 	switch (set) {
 	case 0:
-
+		reset();
+		AnimationMode = 0;
 		//default
 		break;
 	case 1: //sin wave: move down
@@ -50,20 +91,15 @@ void LightConf::lightingSettingsPresets(int set) {
 		AnimationMode = 1;
 		break;
 	case 5: //reset to default
+		
+		AnimationMode = 2
+		break;
+	case 6: //set to 0
 		for (int cnt = 0; cnt < NumLED; cnt++) {
 			lightSettings[cnt].phase = 0;
 			lightSettings[cnt].speed = 0;
 			lightSettings[cnt].range = 0;
 			lightSettings[cnt].midInt = 0;
-		}
-		AnimationMode = 0;
-		break;
-	case 6: //reset to default
-		for (int cnt = 0; cnt < NumLED; cnt++) {
-			lightSettings[cnt].phase = 0;
-			lightSettings[cnt].speed = 1;
-			lightSettings[cnt].range = 35;
-			lightSettings[cnt].midInt = 45;
 		}
 		AnimationMode = 0;
 		break;
@@ -73,13 +109,13 @@ void LightConf::lightingSettingsPresets(int set) {
 	}
 }
 
-void LightConf::applyState() {
+void LightHandler::applyState() {
 	for (int cnt = 0; cnt < NumLED; cnt++) {
 		analogWrite(LEDPin[cnt], lightSettings[cnt].brightness);
 	}
 }
 
-void LightConf::lightingFunc(int set) {
+void LightHandler::lightingFunc(int set) {
 	switch (set) {
 	case 0:
 		//constant 
@@ -90,29 +126,56 @@ void LightConf::lightingFunc(int set) {
 
 		break;
 	}
+	case 2:
+		blip();
+
+		break;
+	}
 }
 
-void LightConf::setLightPreset(int x){
+void LightHandler::getGlobalLightSetting(){
+	return GlobalLightSetting;
+}
+
+void LightHandler::getAnimationMode(){
+	return AnimationMode;
+}
+
+void LightHandler::setLightPreset(int x){
 	GlobalLightSetting = x;
 	lightingSettingsPresets(x);
 	}
 	
-void LightConf::setWavelength(float x){
+void LightHandler::setWavelength(float x){
 	Wavelength = x;
-}	
+}
+	
+void LightHandler::reset(){
+	for (int cnt = 0; cnt < NumLED; cnt++) {
+		lightSettings[cnt].phase = 0;
+		lightSettings[cnt].speed = 1;
+		lightSettings[cnt].range = 35;
+		lightSettings[cnt].midInt = 45;
+	}
+	AnimationMode = 0;
+}
 
 	//constructor
-LightConf::LightConf(const int *LEDPinArray, light* lightSettingsArray,const int &NumLEDin ) {
+LightHandler::LightHandler(const int *LEDPinArray, light* lightSettingsArray,const int &NumLEDin ) {
+		unsigned long currenttime = millis();
 		LEDPin = LEDPinArray;
 		NumLED = NumLEDin;
 		lightSettings = lightSettingsArray;
+		for (int cnt = 0; cnt < NumLED; cnt++) {
+			pinMode(LEDPin[cnt], OUTPUT);
+			lightSettings[cnt].lastblip = currenttime;
+		}
 	}
 
 	//default constructor
-LightConf::LightConf() {}
+LightHandler::LightHandler() {}
 
-
-void LightConf::exLighting() {
+void LightHandler::exLighting() {
 		lightingFunc(AnimationMode);
 		applyState();
 	}

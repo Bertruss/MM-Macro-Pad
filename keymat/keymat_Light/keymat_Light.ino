@@ -1,25 +1,14 @@
+
+
 /* Extensible Button Matrix using a Teensy microcontroller
    author: Michael Hautman
    year: 2016
 */
 
 #include <LCqueue.h>
+#include <LightConf.h>
 
-//function prototypes
-void KeyMap(int address);
-bool softModCheck(int I);
-int buttonaddr(int rownum, int colnum);
-void debounce(int rownum, int colnum);
-bool checkLongHold(unsigned long button_cooldown_time,  unsigned long button_confirmed_state_change_time, int address);
-bool checkExceptionTimers(int address);
-void rowSet(int rowIn);
-void scan();
-void genOutputBuffer();
-void executeBuffer();
-
-void setup();
-void loop();
-
+ 
 // `a` is the code for the key press you wish to pass.
 #define STANDARD_KEY_PRESS(a) Keyboard.press(a); Keyboard.release(a);
 
@@ -49,7 +38,6 @@ void loop();
 #define NUM_COLUMNS 3
 
 // This setting controls the number of individual light objects the teensy will expect. 
-// Depending upon your wiring scheme this could mean different things
 #define NUM_LED 3
 
 // Number of buttons
@@ -63,8 +51,6 @@ int button_buff[BUTTONS];
 const int col[NUM_COLUMNS] PROGMEM = {0,1,2}; //these are the pins that are read
 const int row[NUM_ROWS] PROGMEM = {8, 9, 10}; //these are the pins that are set
 const int LEDpin[NUM_ROWS] PROGMEM = {3,4,6}; //these are the PMW pins for the LEDS
-int lightSetting = 1;
-int lightConf = 3;
 
 /* BUTTON COOLDOWN
    This array is where you would set the cooldown time for each button.
@@ -317,6 +303,10 @@ void scan() {
   }
 }
 
+
+light* Lights = new light[NUM_LEDS]; 
+LightConf lightcontrol;
+
 /* Reads the current button state as determined via debounced button matrix scan,
    and then makes sure the press is registerable (has no withstanding cooldown,
    if it's exceeded longhold time, or if the output buffer has reached 100, an arbitrarily determined limit).
@@ -346,20 +336,14 @@ void setup() {
   for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
     pinMode(col[cnt], INPUT);
   }
-  for (int cnt = 0; cnt < NUM_LED; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
-    pinMode(LEDpin[cnt], OUTPUT);
-  }
-  lightRowSettings[0] = row1Light;
-  lightRowSettings[1] = row2Light;
-  lightRowSettings[2] = row3Light;
-  lightingConfPresets(lightConf);
+  lightcontrol = LightConf(LEDpin, Lights, NUM_LED); 
+  lightcontrol.setLightPreset(2);
   outputBuffer = new_queue();               // Allocating memory for queue
 }
-
 // Main Loop, which runs continuously
 void loop() {
   scan();
   genOutputBuffer();
   executeBuffer();
-  lightingFunc(lightSetting);
+  lightcontrol.exLighting();
 }
