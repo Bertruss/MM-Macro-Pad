@@ -29,16 +29,20 @@ void void LightHandler::blip() {
 	int brightness;
 	int blipDuration = 500; 
 	unsigned long currentTime = millis();
-	unsigned long timeSinceBlipTrue = currentTime - lightSettings[cnt].lastblip;
+	unsigned long timeSinceBlipTrue;
 	for (int cnt = 0; cnt < NumLED; cnt++) {
+		timeSinceBlipTrue = currentTime - lightSettings[cnt].lastblip;
 		if(lightSettings[cnt].blip){
-			uint8_t max = lightSettings[cnt].midInt + lightSettings[cnt].range;
-			uint8_t variance = lightSettings[cnt].range - lightSettings[cnt].midInt;
-			brightness = variance*(-(timeSinceBlipTrue/(blipDuration/2) - 1)^2 + 1) + lightSettings[cnt].midInt; //follows a -(x-1)^2 + 1 curve for growing brighter then fading.
-			Brightnesslimit(brightness);
-			lightSettings[cnt].brightness = brightness;
-			if ()
-			
+			if(timeSinceBlipTrue >=  blipDuration){
+				lightSettings[cnt].blip = false;
+				lightSettings[cnt].brightness = lightSettings[cnt].midInt;
+			}else{
+				uint8_t max = lightSettings[cnt].midInt + lightSettings[cnt].range;
+				uint8_t variance = lightSettings[cnt].range - lightSettings[cnt].midInt;
+				brightness = variance*(-(timeSinceBlipTrue/(blipDuration/2) - 1)^2 + 1) + lightSettings[cnt].midInt; //follows a -(x-1)^2 + 1 curve for growing brighter then fading.
+				Brightnesslimit(brightness);
+				lightSettings[cnt].brightness = brightness;
+			}	
 		}else{
 			if(random(0, 1000) < 1000*(lightSettings[cnt].TTblip/(timeSinceBlip))){
 				lightSettings[cnt].lastblip = currentTime;
@@ -58,31 +62,24 @@ void LightHandler::lightIntensityMod(int x) {
 
 void LightHandler::lightingSettingsPresets(int set) {
 	switch (set) {
-	case 0:
+	case 0: //default
 		reset();
 		AnimationMode = 0;
-		//default
+		
 		break;
-	case 1: //sin wave: move down
+	case 1: //sin wave: move up
 		for (int cnt = 0; cnt < NumLED; cnt++) {
 			lightSettings[cnt].phase = 0 + (1.0 / NumLED) * ((float)cnt)/ Wavelength;
 		}
 		AnimationMode = 1;
 		break;
-	case 2: //sin wave: move up
+	case 2: //sin wave: move down
 		for (int cnt = 0; cnt < NumLED; cnt++) {
 			lightSettings[cnt].phase = 1 - (1.0 / NumLED) * (cnt*1.0)/Wavelength;
 		}
 		AnimationMode = 1;
 		break;
-	case 3:
-		for (int cnt = 0; cnt < NumLED; cnt++) {
-			lightSettings[cnt].range = 20;
-			lightSettings[cnt].midInt = 30;
-		}
-		AnimationMode = 1;
-		break;
-	case 4: //sin wave: short pulse up
+	case 3: //sin wave: short pulse up
 		for (int cnt = 0; cnt < NumLED; cnt++) {
 			lightSettings[cnt].range = 10 + 15 * cnt;
 			lightSettings[cnt].midInt = 0;
@@ -90,8 +87,16 @@ void LightHandler::lightingSettingsPresets(int set) {
 		}
 		AnimationMode = 1;
 		break;
-	case 5: //reset to default
-		
+	case 4: //sin wave: short pulse up
+		for (int cnt = 0; cnt < NumLED; cnt++) {
+			lightSettings[cnt].range = 10 + 255/NumLED * cnt;
+			lightSettings[cnt].midInt = 0;
+			lightSettings[cnt].phase = 0 + .35 * cnt;
+		}
+		AnimationMode = 1;
+		break;
+	case 5: //blip
+
 		AnimationMode = 2
 		break;
 	case 6: //set to 0
@@ -175,7 +180,7 @@ LightHandler::LightHandler(const int *LEDPinArray, light* lightSettingsArray,con
 	//default constructor
 LightHandler::LightHandler() {}
 
-void LightHandler::exLighting() {
+void LightHandler::execute() {
 		lightingFunc(AnimationMode);
 		applyState();
 	}

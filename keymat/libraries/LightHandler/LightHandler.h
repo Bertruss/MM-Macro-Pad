@@ -29,6 +29,10 @@ public:
 
 };
 
+//Preset description enum
+enum lighting_presets_t { DEFAULT, SIN_WAVE_FORWARD, SIN_WAVE_REV, DIM_SUBTLE, };
+
+
 //struct that stores light data
 typedef struct light {
 	uint8_t brightness = 10; // 0-255 PWM number
