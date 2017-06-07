@@ -1,12 +1,10 @@
-
-
 /* Extensible Button Matrix using a Teensy microcontroller
    author: Michael Hautman
    year: 2016
 */
 
 #include <LCqueue.h>
-#include <LightConf.h>
+#include <LightHandler.h>
 
  
 // `a` is the code for the key press you wish to pass.
@@ -51,6 +49,9 @@ int button_buff[BUTTONS];
 const int col[NUM_COLUMNS] PROGMEM = {0,1,2}; //these are the pins that are read
 const int row[NUM_ROWS] PROGMEM = {8, 9, 10}; //these are the pins that are set
 const int LEDpin[NUM_ROWS] PROGMEM = {3,4,6}; //these are the PMW pins for the LEDS
+light* Lights = new light[NUM_LED]; 
+LightHandler lightcontrol;
+
 
 /* BUTTON COOLDOWN
    This array is where you would set the cooldown time for each button.
@@ -137,8 +138,12 @@ void KeyMap(int address) {
       
       break;
     case 5 : // Volume Up
-      STANDARD_KEY_PRESS(KEY_MEDIA_VOLUME_INC);
-       
+      if(softModCheck(7)){ //cycle through lighting presets
+        lightcontrol.lightIntensityMod(10);
+      } else {
+         STANDARD_KEY_PRESS(KEY_MEDIA_VOLUME_INC);
+      }
+      
       break;
     case 6 : //joystick 1
       JOYSTICK_BUTTON_PRESS(1);
@@ -146,20 +151,23 @@ void KeyMap(int address) {
       break;
     case 7 : //joystick 2
       if(softModCheck(6)){ //cycle through lighting presets
-        if(lightConf < 4){
-            lightConf++;
+        if(lightcontrol.getGlobalLightSetting() < ZERO){
+            lightcontrol.setLightPreset(lightcontrol.getGlobalLightSetting() + 1);
           } else {
-            lightConf = 0;  
+            lightcontrol.setLightPreset(0); 
           }
-          lightingConfPresets(lightConf);
       } else {
         JOYSTICK_BUTTON_PRESS(2);
       }
       
       break;
     case 8 : //joystick 3
-      JOYSTICK_BUTTON_PRESS(3);
-  
+      if(softModCheck(7)){ //cycle through lighting presets
+        lightcontrol.lightIntensityMod(-10);
+      } else {
+        JOYSTICK_BUTTON_PRESS(3);
+      }
+      
       break;
       
     // If you add more rows or columns, more cases need to be added
@@ -303,10 +311,6 @@ void scan() {
   }
 }
 
-
-light* Lights = new light[NUM_LEDS]; 
-LightConf lightcontrol;
-
 /* Reads the current button state as determined via debounced button matrix scan,
    and then makes sure the press is registerable (has no withstanding cooldown,
    if it's exceeded longhold time, or if the output buffer has reached 100, an arbitrarily determined limit).
@@ -336,14 +340,15 @@ void setup() {
   for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
     pinMode(col[cnt], INPUT);
   }
-  lightcontrol = LightConf(LEDpin, Lights, NUM_LED); 
+  lightcontrol = LightHandler(LEDpin, Lights, NUM_LED); 
   lightcontrol.setLightPreset(2);
   outputBuffer = new_queue();               // Allocating memory for queue
 }
+
 // Main Loop, which runs continuously
 void loop() {
   scan();
   genOutputBuffer();
   executeBuffer();
-  lightcontrol.exLighting();
+  lightcontrol.execute();
 }
