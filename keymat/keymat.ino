@@ -273,7 +273,7 @@ bool checkExceptionTimers(int address) { // Returns true if cooldown timer is ex
 
 // Sets chosen row high and all others low
 void rowSet(int rowIn) {
-  for (int cnt = 0; cnt < NUM_ROWS; cnt = cnt + 1) {
+  for (int cnt = 0; cnt < NUM_ROWS; cnt++) {
     if (cnt == rowIn) {
       digitalWrite(row[cnt], HIGH);
     }
@@ -286,9 +286,9 @@ void rowSet(int rowIn) {
 
 // Checks every button in the matrix, runs "debounce" on it
 void scan() {
-  for (int rownum = 0; rownum < NUM_ROWS; rownum = rownum + 1) {      // Increments rownum
+  for (int rownum = 0; rownum < NUM_ROWS; rownum++) {      // Increments rownum
     rowSet(rownum);                                               // and sets the row with that number to HIGH.
-    for (int colnum = 0; colnum < NUM_COLUMNS; colnum = colnum + 1) { // Increments colnum
+    for (int colnum = 0; colnum < NUM_COLUMNS; colnum++) { // Increments colnum
       debounce(rownum, colnum);                                   // and runs "debounce" on that column
     }
   }

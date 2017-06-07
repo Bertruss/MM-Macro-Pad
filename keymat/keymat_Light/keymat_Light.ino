@@ -4,31 +4,9 @@
 */
 
 #include <LCqueue.h>
+#include <LightHandler.h>
 
-//function prototypes
-void KeyMap(int address);
-bool softModCheck(int I);
-int buttonaddr(int rownum, int colnum);
-void debounce(int rownum, int colnum);
-bool checkLongHold(unsigned long button_cooldown_time,  unsigned long button_confirmed_state_change_time, int address);
-bool checkExceptionTimers(int address);
-void rowSet(int rowIn);
-void scan();
-void genOutputBuffer();
-void executeBuffer();
-
-void setup();
-void loop();
-
-//LED Lighting 
-struct lightObj;
-void lightWaveSin();
-void lightIntensityMod(int x);
-void lightFlicker();
-void lightFlame();
-void lightingConfPresets(int set);
-void lightingFunc(int set);
-
+ 
 // `a` is the code for the key press you wish to pass.
 #define STANDARD_KEY_PRESS(a) Keyboard.press(a); Keyboard.release(a);
 
@@ -57,7 +35,7 @@ void lightingFunc(int set);
 // This setting controls the number of columns the teensy expects
 #define NUM_COLUMNS 3
 
-// This setting controls the number of columns the teensy expects
+// This setting controls the number of individual light objects the teensy will expect. 
 #define NUM_LED 3
 
 // Number of buttons
@@ -71,8 +49,9 @@ int button_buff[BUTTONS];
 const int col[NUM_COLUMNS] PROGMEM = {0,1,2}; //these are the pins that are read
 const int row[NUM_ROWS] PROGMEM = {8, 9, 10}; //these are the pins that are set
 const int LEDpin[NUM_ROWS] PROGMEM = {3,4,6}; //these are the PMW pins for the LEDS
-int lightSetting = 1;
-int lightConf = 3;
+light* Lights = new light[NUM_LED]; 
+LightHandler lightcontrol;
+
 
 /* BUTTON COOLDOWN
    This array is where you would set the cooldown time for each button.
@@ -159,8 +138,12 @@ void KeyMap(int address) {
       
       break;
     case 5 : // Volume Up
-      STANDARD_KEY_PRESS(KEY_MEDIA_VOLUME_INC);
-       
+      if(softModCheck(7)){ //cycle through lighting presets
+        lightcontrol.lightIntensityMod(10);
+      } else {
+         STANDARD_KEY_PRESS(KEY_MEDIA_VOLUME_INC);
+      }
+      
       break;
     case 6 : //joystick 1
       JOYSTICK_BUTTON_PRESS(1);
@@ -168,20 +151,23 @@ void KeyMap(int address) {
       break;
     case 7 : //joystick 2
       if(softModCheck(6)){ //cycle through lighting presets
-        if(lightConf < 4){
-            lightConf++;
+        if(lightcontrol.getGlobalLightSetting() < ZERO){
+            lightcontrol.setLightPreset(lightcontrol.getGlobalLightSetting() + 1);
           } else {
-            lightConf = 0;  
+            lightcontrol.setLightPreset(0); 
           }
-          lightingConfPresets(lightConf);
       } else {
         JOYSTICK_BUTTON_PRESS(2);
       }
       
       break;
     case 8 : //joystick 3
-      JOYSTICK_BUTTON_PRESS(3);
-  
+      if(softModCheck(7)){ //cycle through lighting presets
+        lightcontrol.lightIntensityMod(-10);
+      } else {
+        JOYSTICK_BUTTON_PRESS(3);
+      }
+      
       break;
       
     // If you add more rows or columns, more cases need to be added
@@ -209,115 +195,6 @@ bool softModCheck(int I) {
     }
 }
 
-/*
- *****************************************
- ****** LIGHTING RELATED COMPONENTS ******
- *****************************************
-*/
-
-//struct that stores light data
-struct lightObj{
-  int brightness = 0; // 0-255 PWM number
-  double phase = 0;   // shifted by pi*phase for sinusoidal functions 
-  double speed = 1;   //
-  int range = 20;     // 0-255 variance
-  int midInt = 20;    // 0-255 mean instensity
-  } row1Light, row2Light, row3Light;
-  
-lightObj lightRowSettings[3];
-
-void lightWaveSin(){
-  for(int cnt = 0;cnt < 3;cnt++){
-    lightRowSettings[cnt].brightness =  lightRowSettings[cnt].range * sin(PI*(lightRowSettings[cnt].phase) + PI* millis()/(1000)*lightRowSettings[cnt].speed) +  lightRowSettings[cnt].midInt; 
-  }
-}
-
-void lightIntensityMod(int x){
-   for(int cnt = 0;cnt < 3;cnt++){
-        lightRowSettings[cnt].midInt += x;
-      }
-  }
-
-void lightFlicker(){
-  for(int cnt = 0;cnt < 3;cnt++){
-    lightRowSettings[cnt].brightness =  random(lightRowSettings[cnt].brightness - 1, lightRowSettings[cnt].brightness + 1);
-    if(lightRowSettings[cnt].brightness > (lightRowSettings[cnt].midInt + lightRowSettings[cnt].range)
-      ||lightRowSettings[cnt].brightness < (lightRowSettings[cnt].midInt - lightRowSettings[cnt].range)){
-      lightRowSettings[cnt].brightness = lightRowSettings[cnt].midInt;
-      }  
-  }
-}
-
-void lightFlame(){
-  lightFlicker();
-  for( int cnt = 0;cnt < 3;cnt++){
-    if(cnt != 0){
-      lightRowSettings[cnt].brightness = lightRowSettings[cnt-1].brightness * .25;     
-      } 
-  }
-}
-  
-void lightingConfPresets(int set){
-  switch (set) {
-    case 0 : //sin wave: move down
-      lightRowSettings[0].phase = 0; 
-      lightRowSettings[1].phase = .5;
-      lightRowSettings[2].phase = 1;     
-      lightSetting = 1;
-      break;
-    case 1 : //sin wave: move up
-      lightRowSettings[2].phase = 0; 
-      lightRowSettings[1].phase = .5;
-      lightRowSettings[0].phase = 1; 
-      lightSetting = 1;
-      break;
-    case 2 :
-      for(int cnt = 0;cnt < 3;cnt++){
-        lightRowSettings[cnt].range = 20;
-        lightRowSettings[cnt].midInt = 30;
-      }
-      lightSetting = 1;
-      break;
-     case 3 : //sin wave: short pulse up
-      for(int cnt = 0;cnt < 3; cnt++){
-        lightRowSettings[cnt].range = 10 + 15*cnt;
-        lightRowSettings[cnt].midInt = 0;
-        lightRowSettings[cnt].phase = 0 + .35 * cnt;
-      }
-      break;
-    case 4 :
-      for(int cnt = 0;cnt < 3;cnt++){
-        lightRowSettings[cnt].phase = 0;
-        lightRowSettings[cnt].speed = 1;
-        lightRowSettings[cnt].range = 35;
-        lightRowSettings[cnt].midInt = 45;
-      }
-  }
-}
-
-void lightingFunc(int set){
-  switch (set) {
-    case 0 : 
-      //constant 
-    
-      break;
-    case 1 : 
-    lightWaveSin();
-      
-      break;
-    case 2 : 
-    lightFlicker();
-
-      break;
-    case 3 : 
-    lightFlame();
-    
-      break;
-  }
-  analogWrite(LEDpin[0], lightRowSettings[0].brightness);
-  analogWrite(LEDpin[1], lightRowSettings[1].brightness);
-  analogWrite(LEDpin[2], lightRowSettings[2].brightness);
-}  
 
 
 /*
@@ -463,13 +340,8 @@ void setup() {
   for (int cnt = 0; cnt < NUM_COLUMNS; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
     pinMode(col[cnt], INPUT);
   }
-  for (int cnt = 0; cnt < NUM_LED; cnt++) { // Instantiates every pin in col[] to INPUT_PULLUP
-    pinMode(LEDpin[cnt], OUTPUT);
-  }
-  lightRowSettings[0] = row1Light;
-  lightRowSettings[1] = row2Light;
-  lightRowSettings[2] = row3Light;
-  lightingConfPresets(lightConf);
+  lightcontrol = LightHandler(LEDpin, Lights, NUM_LED); 
+  lightcontrol.setLightPreset(2);
   outputBuffer = new_queue();               // Allocating memory for queue
 }
 
@@ -478,5 +350,5 @@ void loop() {
   scan();
   genOutputBuffer();
   executeBuffer();
-  lightingFunc(lightSetting);
+  lightcontrol.execute();
 }
