@@ -2,8 +2,8 @@
 //demo
 
 
-const int NumLEDS = 6;//number of pins used
-const int LEDpin[NumLEDS] = {11,10,9,6,5,3};//PWM pin numbers
+const int NumLEDS = 1;//number of pins used
+const int LEDpin[NumLEDS] = {3};//PWM pin numbers
 
 light* Lights = new light[NumLEDS]; //instantiating a array of 'light' structures to be manipulated by the lighthandler object
 LightHandler lightcontrol; //allocates memory for lighthandler object 'lightcontrol'
