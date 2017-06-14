@@ -341,7 +341,7 @@ void setup() {
     pinMode(col[cnt], INPUT);
   }
   lightcontrol = LightHandler(LEDpin, Lights, NUM_LED); 
-  lightcontrol.setLightPreset(2);
+  lightcontrol.setLightPreset(0);
   outputBuffer = new_queue();               // Allocating memory for queue
 }
 
