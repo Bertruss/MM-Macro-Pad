@@ -13,7 +13,7 @@ Code and various design artifacts for build of a key matrix, for use as a macro-
   - all typical keyboard key assignments
 - support for scripting
 - can be adjusted to any number of rows or columns
-- Implementation of animations and controls for LED lighting
+- Implementation of animations and controls for LED lighting (LightHandler)
 
 ## additional design goals 
 - multiple modes for macros and functions.
